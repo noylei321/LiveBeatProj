@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navgraph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/artistDashboardFragment"
+        android:name="com.example.myapplication.ArtistDashboardFragment"
+        android:label="fragment_artist_dashboard"
+        tools:layout="@layout/fragment_artist_dashboard" >
+        <action
+            android:id="@+id/action_artistDashboardFragment_to_fragment_artist_live"
+            app:destination="@id/fragment_artist_live" />
+    </fragment>
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.myapplication.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_registerUserFragment"
+            app:destination="@id/registerUserFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_registerArtistFragment"
+            app:destination="@id/registerArtistFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_artistDashboardFragment"
+            app:destination="@id/artistDashboardFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.example.myapplication.MapFragment"
+        android:label="fragment_map"
+        tools:layout="@layout/fragment_map" >
+        <action
+            android:id="@+id/action_mapFragment_to_sendRequestFragment"
+            app:destination="@id/sendRequestFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerUserFragment"
+        android:name="com.example.myapplication.RegisterUserFragment"
+        android:label="fragment_register_user"
+        tools:layout="@layout/fragment_register_user" >
+        <action
+            android:id="@+id/action_registerUserFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerArtistFragment"
+        android:name="com.example.myapplication.RegisterArtistFragment"
+        android:label="fragment_register_artist"
+        tools:layout="@layout/fragment_register_artist" >
+        <action
+            android:id="@+id/action_registerArtistFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragment_artist_live"
+        android:name="com.example.myapplication.fragment_artist_live"
+        android:label="fragment_artist_live"
+        tools:layout="@layout/fragment_artist_live" />
+    <fragment
+        android:id="@+id/sendRequestFragment"
+        android:name="com.example.myapplication.SendRequestFragment"
+        android:label="SendRequestFragment" />
+</navigation>

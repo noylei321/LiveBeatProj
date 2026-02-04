@@ -1,0 +1,122 @@
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="30dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/imgArtistProfile"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@android:drawable/ic_menu_gallery"
+                app:shapeAppearanceOverlay="@style/CircleImage"
+                android:background="#F0F0F0"
+                android:padding="2dp"
+                app:strokeColor="#E91E63"
+                app:strokeWidth="2dp"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="20dp">
+
+                <TextView
+                    android:id="@+id/tvArtistName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="שיר מולקנדוב"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="#222"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="אמן רשום"
+                    android:textSize="14sp"
+                    android:textColor="#888"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="הופעות אחרונות"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#555"
+            android:layout_marginBottom="10dp"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/tvNoShows"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="עדיין לא קיימות הופעות אחרונות"
+                android:layout_gravity="center"
+                android:textColor="#BBB"
+                android:visibility="visible" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPastShows"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="20dp">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabAddShow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:fabCustomSize="70dp"
+            app:maxImageSize="35dp"
+            app:srcCompat="@android:drawable/ic_input_add"
+            app:backgroundTint="#6200EE"
+            app:tint="#FFFFFF"
+            app:elevation="8dp" />
+
+        <Button
+            android:id="@+id/btnStartLive"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="כנס למצב הופעה (LIVE) 🎤"
+            android:backgroundTint="#888888"
+            android:enabled="false"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            app:cornerRadius="15dp" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string-array name="music_genres">
+        <item>...בחרו סגנון אהוב</item>
+        <item>(Pop) פופ</item>
+        <item>(Rock) רוק</item>
+        <item>(Hip Hop) היפ הופ</item>
+        <item>מזרחית / ים תיכוני</item>
+        <item>טכנו / אלקטרוני</item>
+        <item>גאז ובלוז</item>
+        <item>אלטרנטיבי</item>
+        <item>רגאיי</item>
+    </string-array>
+
+    <string name="artist_title">הרשמת אמן 🎧</string>
+    <string name="artist_subtitle">בואו נבנה את הפרופיל המקצועי שלך</string>
+    <string name="btn_create_artist">צור פרופיל אמן 🌟</string>
+    <string name="hint_full_name_private">שם מלא (פרטי)</string>
+    <string name="hint_stage_name">שם במה (DJ Name)</string>
+    <string name="hint_birth_date">תאריך לידה</string>
+    <string name="hint_instrument">כלי נגינה / ציוד</string>
+    <string name="hint_email_biz">אימייל עסקי</string>
+    <string name="hint_username">שם משתמש (כינוי)</string>
+    <string name="hint_password">סיסמה</string>
+    <string name="hint_phone_biz">טלפון להזמנות</string>
+    <string name="hint_social_link">לינק לאינסטגרם</string>
+    <string name="hint_bio">קצת עליך (Bio)</string>
+    <string name="label_style">הסגנון שלך:</string>
+</resources>

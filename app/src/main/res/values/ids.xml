@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="etFullName" type="id" />
+    <item name="etBirthDate" type="id" />
+    <item name="etPhone" type="id" />
+    <item name="spinnerGenre" type="id" />
+    <item name="imgArtistProfileUpload" type="id" />
+    <item name="FloatingActionButton" type="id" />
+    <item name="etArtistFullName" type="id" />
+    <item name="etStageName" type="id" />
+    <item name="etArtistBirthDate" type="id" />
+    <item name="etInstrument" type="id" />
+    <item name="etArtistEmail" type="id" />
+    <item name="etArtistUserName" type="id" />
+    <item name="etArtistPassword" type="id" />
+    <item name="etArtistPhone" type="id" />
+    <item name="etSocialLink" type="id" />
+    <item name="etDescription" type="id" />
+    <item name="spinnerArtistGenre" type="id" />
+    <item name="btnRegisterArtist" type="id" />
+</resources>
