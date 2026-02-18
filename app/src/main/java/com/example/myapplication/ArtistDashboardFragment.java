@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -15,10 +16,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -29,6 +32,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 
@@ -37,21 +41,22 @@ public class ArtistDashboardFragment extends Fragment {
     private RecyclerView rvShows;
     private ShowsAdapter showsAdapter;
     private ArrayList<Show> showsList;
-
-    private ImageView imgArtistProfile;
-    private TextView tvArtistName;
+    private Chip artLogout, chipEditProfile;
+    private ImageView imgArtistProfile, imgArtistTypeIcon;
+    private TextView tvArtistName, tvArtistUsername, tvArtistType, tvArtistFullName;
     private Button btnStartLive;
-
     private DatabaseReference showsRef;
     private FirebaseAuth mAuth;
 
     public ArtistDashboardFragment() { }
 
+    // פונקציית Lifecycle המנפחת (Inflate) את ה-Layout של הדאשבורד ומחזירה את ה-View למערכת.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_artist_dashboard, container, false);
     }
 
+    // פונקציה המופעלת לאחר יצירת ה-View. היא משמשת לאתחול אובייקטי Firebase, קישור רכיבי UI, והגדרת ה-RecyclerView.
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -59,12 +64,16 @@ public class ArtistDashboardFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         showsRef = FirebaseDatabase.getInstance().getReference("Shows");
 
-        // --- התיקון כאן: ה-IDs הותאמו ל-XML שלך ---
         imgArtistProfile = view.findViewById(R.id.imgArtistProfile);
         tvArtistName = view.findViewById(R.id.tvArtistName);
+        imgArtistTypeIcon = view.findViewById(R.id.imgArtistTypeIcon);
+        tvArtistUsername = view.findViewById(R.id.tvArtistUsername);
+        tvArtistType = view.findViewById(R.id.tvArtistType);
+        tvArtistFullName = view.findViewById(R.id.tvArtistFullName);
         btnStartLive = view.findViewById(R.id.btnStartLive);
+        chipEditProfile = view.findViewById(R.id.chipEditProfile);
 
-        loadArtistDataFromDB();
+        loadArtistDataFromDB(); // טעינת נתוני פרופיל.
 
         rvShows = view.findViewById(R.id.rvPastShows);
         showsList = new ArrayList<>();
@@ -75,86 +84,150 @@ public class ArtistDashboardFragment extends Fragment {
             rvShows.setAdapter(showsAdapter);
         }
 
-        readShowsFromDB();
+        readShowsFromDB(); // טעינת רשימת ההופעות.
 
         FloatingActionButton fabAddShow = view.findViewById(R.id.fabAddShow);
         if (fabAddShow != null) {
+            // מאזין הפותח את הדיאלוג להוספת הופעה חדשה.
             fabAddShow.setOnClickListener(v -> {
                 AddShowDialogFragment dialog = new AddShowDialogFragment();
                 dialog.show(getChildFragmentManager(), "AddShowDialog");
             });
         }
 
+        // הפעלת לוגיקת הניווט החכמה למצב LIVE.
         btnStartLive.setOnClickListener(v -> {
-            Show liveShow = findCurrentLiveShow();
-            if (liveShow != null) {
-                showsRef.child(liveShow.getShowId()).child("live").setValue(true)
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(getContext(), "הופעה חיה התחילה!", Toast.LENGTH_SHORT).show();
-                            Bundle bundle = new Bundle();
-                            bundle.putString("showId", liveShow.getShowId());
-                            androidx.navigation.Navigation.findNavController(requireView())
-                                    .navigate(R.id.fragment_artist_live, bundle);
-                        });
-            }
+            findClosestShowAndNavigate();
+        });
+
+        artLogout = view.findViewById(R.id.UserLogout);
+        artLogout.setOnClickListener(v -> showLogoutDialog());
+
+        // מאזין לניווט למסך עריכת הפרופיל באמצעות ה-Navigation Component.
+        view.findViewById(R.id.chipEditProfile).setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.action_artistDashboardFragment_to_editArtistProfileFragment);
         });
     }
 
+    // פונקציה המבצעת שאילתה ל-Firebase כדי למצוא הופעה פעילה (isLive) או את ההופעה הקרובה ביותר בזמן הנוכחי.
+    private void findClosestShowAndNavigate() {
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Shows");
+
+        // ביצוע שאילתה מסוננת לפי ה-ID של האמן.
+        ref.orderByChild("artistId").equalTo(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String liveShowId = null;
+                String closestShowId = null;
+                long minDiff = Long.MAX_VALUE;
+                long currentTime = System.currentTimeMillis();
+
+                final long FOUR_HOURS_IN_MILLIS = 14400000;
+                final long TWO_HOURS_IN_MILLIS = 7200000;
+
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Show show = ds.getValue(Show.class);
+                    if (show != null) {
+                        // בדיקת עדיפות עליונה: האם יש מופע שמוגדר כבר כפעיל בשרת.
+                        if (show.isLive()) {
+                            liveShowId = show.getShowId();
+                            break;
+                        }
+
+                        try {
+                            long showTime = convertTimeToMillis(show.getDate(), show.getTime());
+
+                            // התעלמות מהופעות שהסתיימו לפני יותר מ-4 שעות.
+                            if (currentTime > (showTime + FOUR_HOURS_IN_MILLIS)) continue;
+
+                            // חישוב ההפרש הקטן ביותר למציאת המופע הקרוב ביותר (עתידי או נוכחי).
+                            long diff = Math.abs(currentTime - showTime);
+                            if (diff < minDiff) {
+                                minDiff = diff;
+                                closestShowId = show.getShowId();
+                            }
+                        } catch (Exception e) { e.printStackTrace(); }
+                    }
+                }
+
+                // לוגיקת החלטת הניווט המבוססת על תוצאות הסריקה.
+                if (liveShowId != null) {
+                    navigateToLive(liveShowId);
+                } else if (closestShowId != null) {
+                    // אם המופע הקרוב רחוק ביותר משעתיים, נבקש אישור מהמשתמש.
+                    if (minDiff > TWO_HOURS_IN_MILLIS) {
+                        final String finalShowId = closestShowId;
+                        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                                .setTitle("שים לב ⚠️")
+                                .setMessage("לא נמצאה הופעה פעילה כעת. האם להתחיל את המופע הקרוב בכל זאת?")
+                                .setPositiveButton("כן, התחל", (dialog, which) -> navigateToLive(finalShowId))
+                                .setNegativeButton("ביטול", null)
+                                .show();
+                    } else {
+                        navigateToLive(closestShowId);
+                    }
+                } else {
+                    Toast.makeText(getContext(), "לא נמצאו הופעות פעילות או קרובות", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    // פונקציית עזר המבצעת את הניווט הפיזי לפרגמנט ה-Live תוך העברת ה-ID של המופע כארגומנט ב-Bundle.
+    private void navigateToLive(String showId) {
+        Bundle b = new Bundle();
+        b.putString("showId", showId);
+        b.putBoolean("isHistorical", false);
+        Navigation.findNavController(requireView()).navigate(R.id.artistLiveFragment, b);
+    }
+
+    // פונקציה המושכת את נתוני הפרופיל של האמן מה-DB ומעדכנת את רכיבי ה-UI (שם, תמונה וסוג אמן).
     private void loadArtistDataFromDB() {
-
-        if (mAuth.getCurrentUser() == null) {
-            Log.e("DBG", "no user");
-            return;
-        }
-
+        if (mAuth.getCurrentUser() == null) return;
         String uid = mAuth.getCurrentUser().getUid();
-        Log.d("DBG", "uid=" + uid);
-
-        DatabaseReference artistRef =
-                FirebaseDatabase.getInstance().getReference("Artists").child(uid);
+        DatabaseReference artistRef = FirebaseDatabase.getInstance().getReference("Artists").child(uid);
 
         artistRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                Log.d("DBG", "exists=" + snapshot.exists());
-                Log.d("DBG", "raw=" + snapshot.getValue());
-
-                if (!snapshot.exists()) {
-                    tvArtistName.setText("");
-                    imgArtistProfile.setImageResource(android.R.drawable.ic_menu_gallery);
-                    return;
-                }
-
+                if (!snapshot.exists()) return;
                 Artist artist = snapshot.getValue(Artist.class);
                 if (artist == null) return;
 
-                String name = artist.getStageName();
-                if (name == null || name.trim().isEmpty())
-                    name = artist.getFullName();
+                // בחירת השם להצגה: עדיפות לשם במה, אם לא קיים - שם מלא.
+                String name = (artist.getStageName() != null && !artist.getStageName().isEmpty())
+                        ? artist.getStageName() : artist.getFullName();
 
-                tvArtistName.setText(name != null ? name : "");
+                tvArtistName.setText(name);
+                tvArtistUsername.setText("@" + artist.getUsername());
+                tvArtistFullName.setText(artist.getFullName());
+                tvArtistType.setText(artist.getArtistSubCategory());
 
-                String url = artist.getProfileImageUrl();
-                if (url != null && !url.isEmpty()) {
-                    Glide.with(ArtistDashboardFragment.this)
-                            .load(url)
-                            .placeholder(android.R.drawable.ic_menu_gallery)
-                            .into(imgArtistProfile);
-                } else {
-                    imgArtistProfile.setImageResource(android.R.drawable.ic_menu_gallery);
+                if (imgArtistTypeIcon != null) setArtistTypeIcon(artist.getArtistSubCategory());
+
+                // טעינת תמונת הפרופיל באמצעות ספריית Glide לניהול זיכרון וטעינה אופטימלית.
+                if (artist.getProfileImageUrl() != null && !artist.getProfileImageUrl().isEmpty()) {
+                    Glide.with(requireContext()).load(artist.getProfileImageUrl())
+                            .placeholder(android.R.drawable.ic_menu_gallery).into(imgArtistProfile);
                 }
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("DBG", "err=" + error.getMessage());
-            }
+            @Override public void onCancelled(@NonNull DatabaseError error) { }
         });
     }
 
+    // פונקציית עזר לעדכון האייקון הוויזואלי של סוג האמן בהתאם לקטגוריה שלו ב-DB.
+    private void setArtistTypeIcon(String subCat) {
+        switch (subCat) {
+            case "DJ": imgArtistTypeIcon.setImageResource(R.drawable.ic_dj); break;
+            case "Comedian": case "קומיקאי": imgArtistTypeIcon.setImageResource(R.drawable.ic_standup); break;
+            default: imgArtistTypeIcon.setImageResource(R.drawable.ic_singer); break;
+        }
+    }
 
-
+    // פונקציה המאזינה לשינויים בזמן אמת (Real-time) בטבלת ההופעות ומעדכנת את ה-RecyclerView.
     private void readShowsFromDB() {
         if (mAuth.getCurrentUser() == null) return;
         String currentUid = mAuth.getCurrentUser().getUid();
@@ -163,63 +236,104 @@ public class ArtistDashboardFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 showsList.clear();
-                boolean canGoLive = false;
-                long currentTimeMillis = System.currentTimeMillis();
-
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Show show = snapshot.getValue(Show.class);
+                    // סינון הופעות השייכות לאמן המחובר בלבד.
                     if (show != null && show.getArtistId().equals(currentUid)) {
                         showsList.add(show);
-                        try {
-                            long showStartTime = convertTimeToMillis(show.getDate(), show.getTime());
-                            if (currentTimeMillis >= (showStartTime - 600000)) canGoLive = true;
-                        } catch (Exception e) { Log.e("TimeError", "Error"); }
                     }
                 }
 
-                // עדכון ויזואלי של הרשימה לעומת הודעת "אין הופעות"
-                View view = getView();
-                if (view != null) {
-                    TextView tvNoShows = view.findViewById(R.id.tvNoShows);
-                    if (showsList.isEmpty()) {
-                        rvShows.setVisibility(View.GONE);
-                        if (tvNoShows != null) tvNoShows.setVisibility(View.VISIBLE);
-                    } else {
-                        rvShows.setVisibility(View.VISIBLE);
-                        if (tvNoShows != null) tvNoShows.setVisibility(View.GONE);
-                    }
-                }
+                // מיון הרשימה כך שההופעות החדשות ביותר יופיעו בראש הרשימה (סדר כרונולוגי יורד).
+                Collections.sort(showsList, (s1, s2) -> {
+                    try {
+                        return Long.compare(convertTimeToMillis(s2.getDate(), s2.getTime()),
+                                convertTimeToMillis(s1.getDate(), s1.getTime()));
+                    } catch (Exception e) { return 0; }
+                });
 
+                toggleNoShowsMessage(); // הצגת הודעה אם הרשימה ריקה.
                 showsAdapter.notifyDataSetChanged();
-                updateLiveButton(canGoLive);
+
+                // עדכון מצב כפתור ה-LIVE בהתאם לקיום הופעה רלוונטית להיום.
+                Show target = findActiveOrUpcomingShow();
+                updateLiveButton(target != null);
             }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
-    private Show findCurrentLiveShow() {
+    // פונקציית UI המנהלת את נראות הודעת ה-"אין הופעות" אל מול רשימת ה-RecyclerView.
+    private void toggleNoShowsMessage() {
+        View view = getView();
+        if (view == null) return;
+        TextView tvNoShows = view.findViewById(R.id.tvNoShows);
+        if (showsList.isEmpty()) {
+            rvShows.setVisibility(View.GONE);
+            if (tvNoShows != null) tvNoShows.setVisibility(View.VISIBLE);
+        } else {
+            rvShows.setVisibility(View.VISIBLE);
+            if (tvNoShows != null) tvNoShows.setVisibility(View.GONE);
+        }
+    }
+
+    // פונקציה המחפשת הופעה שמתרחשת היום ונמצאת בטווח זמן סביר (שעה לפני או עד 4 שעות אחרי ההתחלה).
+    private Show findActiveOrUpcomingShow() {
         long currentTime = System.currentTimeMillis();
+        long oneHour = 3600000;
+        String todayDate = new SimpleDateFormat("d/M/yyyy", Locale.getDefault()).format(new Date());
+
+        for (Show show : showsList) {
+            if (show.isLive()) return show; // עדיפות למופע שכבר פעיל.
+        }
+
         for (Show show : showsList) {
             try {
-                long showStartTime = convertTimeToMillis(show.getDate(), show.getTime());
-                if (currentTime >= (showStartTime - 600000)) return show;
+                if (show.getDate().equals(todayDate)) {
+                    long startTime = convertTimeToMillis(show.getDate(), show.getTime());
+                    if (currentTime >= (startTime - oneHour) && currentTime <= (startTime + 14400000)) {
+                        return show;
+                    }
+                }
             } catch (Exception e) { e.printStackTrace(); }
         }
         return null;
     }
 
+    // פונקציית עזר המבצעת Parsing של מחרוזות תאריך ושעה לערך Long של מילישניות לצורך חישובים מתמטיים.
     private long convertTimeToMillis(String date, String time) throws Exception {
         SimpleDateFormat sdf = new SimpleDateFormat("d/M/yyyy HH:mm", Locale.getDefault());
         Date mDate = sdf.parse(date + " " + time);
         return mDate != null ? mDate.getTime() : 0;
     }
 
+    // פונקציה המעדכנת את הצבע, הטקסט והזמינות של כפתור ה-LIVE בהתאם למצב ההופעות.
     private void updateLiveButton(boolean enabled) {
         if (btnStartLive != null) {
             btnStartLive.setEnabled(enabled);
             btnStartLive.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(enabled ? "#800080" : "#888888")));
-            btnStartLive.setText(enabled ? "התחל הופעה חיה" : "מצב לייב זמין בקרוב");
+
+            boolean isAnyLive = false;
+            for(Show s : showsList) { if(s.isLive()) isAnyLive = true; }
+
+            if (isAnyLive) {
+                btnStartLive.setText("המשך הופעה חיה 🔴");
+            } else {
+                btnStartLive.setText(enabled ? "התחל הופעה חיה" : "אין הופעה קרובה להיום");
+            }
         }
+    }
+
+    // פונקציה המציגה דיאלוג אישור לפני ביצוע ניתוק (Sign Out) מהמערכת.
+    private void showLogoutDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("התנתקות")
+                .setMessage("אתה בטוח שברצונך להתנתק?")
+                .setPositiveButton("כן", (dialog, which) -> {
+                    FirebaseAuth.getInstance().signOut();
+                    androidx.navigation.Navigation.findNavController(requireView()).navigate(R.id.loginFragment);
+                })
+                .setNegativeButton("לא", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 }

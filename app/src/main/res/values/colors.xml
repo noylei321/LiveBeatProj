@@ -11,4 +11,5 @@
     <color name="beat_accent">#BB86FC</color>
     <color name="beat_pink">#E91E63</color>
     <color name="beat_bg_light">#F2E7FE</color>
+    <color name="chipArt_logout">#D32F2F</color>
 </resources>

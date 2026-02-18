@@ -2,60 +2,62 @@ package com.example.myapplication;
 
 public class User {
     private String fullName;
-    private String userName;
+    private String username; // 🔹 עקביות: username באותיות קטנות לסנכרון מול ה-DB
+    private String userId;
     private String email;
     private String phone;
     private String birthDate;
     private String genre;
+    private String bio; // 🔹 שדה רשות
+    private String userType; // לזיהוי: audience
+    private String profileImageUrl;
 
-    // הוספנו את התגית לזיהוי
-    private String userType;
-
-    // 2. בנאי ריק (חובה לפיירבייס)
+    // 1. בנאי ריק חובה עבור Firebase
     public User() {
     }
 
-    // 3. בנאי מלא
-    public User(String fullName, String userName, String email, String phone, String birthDate, String genre) {
+    // 2. בנאי מלא (סוג המשתמש נקבע כאן אוטומטית)
+    public User(String fullName, String username, String email, String phone, String birthDate, String genre, String bio, String profileImageUrl) {
         this.fullName = fullName;
-        this.userName = userName;
+        this.username = username;
         this.email = email;
         this.phone = phone;
         this.birthDate = birthDate;
         this.genre = genre;
+        this.bio = bio != null ? bio.trim() : "";
+        this.profileImageUrl = profileImageUrl;
 
-        // כאן אנחנו קובעים שזה בליין (קהל) באופן אוטומטי!
+        // 🔹 כאן אנחנו קובעים שזה בליין באופן אוטומטי - אין סוגים שונים
         this.userType = "audience";
     }
 
-    // 4. Getters and Setters
-
-    // --- Full Name ---
+    // Getters and Setters
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
 
-    // --- User Name ---
-    public String getUserName() { return userName; }
-    public void setUserName(String userName) { this.userName = userName; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
-    // --- Email ---
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    // --- Phone ---
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
-    // --- Birth Date ---
     public String getBirthDate() { return birthDate; }
     public void setBirthDate(String birthDate) { this.birthDate = birthDate; }
 
-    // --- Genre ---
     public String getGenre() { return genre; }
     public void setGenre(String genre) { this.genre = genre; }
 
-    // --- User Type (החדש!) ---
-    // חובה להוסיף את אלה כדי שפיירבייס ישמור את הנתון
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
+
     public String getUserType() { return userType; }
     public void setUserType(String userType) { this.userType = userType; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 }

@@ -24,24 +24,23 @@
             android:layout_gravity="center"
             android:layout_marginBottom="20dp"/>
 
-        <EditText
+        <AutoCompleteTextView
             android:id="@+id/etShowAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="איפה ההופעה? (למשל: רוטשילד 1, תל אביב)"
-            android:inputType="textPostalAddress"
             android:background="@drawable/edit_text_rounded"
             android:padding="12dp"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="12dp"
+            android:completionThreshold="2" />
 
         <EditText
             android:id="@+id/etShowDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="באיזה תאריך? (לחץ לבחירה)"
+            android:hint="באיזה תאריך?"
             android:focusable="false"
             android:clickable="true"
-            android:inputType="none"
             android:background="@drawable/edit_text_rounded"
             android:padding="12dp"
             android:layout_marginBottom="12dp"/>
@@ -50,8 +49,9 @@
             android:id="@+id/etShowTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="באיזו שעה מתחילים? (למשל: 20:30)"
-            android:inputType="time"
+            android:hint="באיזו שעה מתחילים?"
+            android:focusable="false"
+            android:clickable="true"
             android:background="@drawable/edit_text_rounded"
             android:padding="12dp"
             android:layout_marginBottom="12dp"/>

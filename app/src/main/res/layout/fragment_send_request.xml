@@ -13,6 +13,17 @@
         android:padding="20dp"
         android:gravity="center_horizontal">
 
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imgArtistProfile"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_dj"
+            app:strokeColor="@color/beat_primary"
+            app:strokeWidth="2dp"
+            app:shapeAppearanceOverlay="@style/CircleAppearance"/>
+
         <TextView
             android:id="@+id/tvArtistRequestTitle"
             android:layout_width="wrap_content"
@@ -22,6 +33,24 @@
             android:textStyle="bold"
             android:textColor="@color/beat_primary"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvArtistStageName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="שם במה"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:textColor="#333" />
+
+        <TextView
+            android:id="@+id/tvArtistUsername"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="username"
+            android:textSize="20sp"
+            android:textColor="#666"
             android:layout_marginBottom="8dp"/>
 
         <TextView

@@ -3,82 +3,101 @@ package com.example.myapplication;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.firebase.database.DatabaseReference;
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.database.FirebaseDatabase;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
+/**
+ * אדפטור (Adapter) לניהול רשימת הבקשות ב-RecyclerView.
+ * תפקידו לקחת את אובייקטי ה-Request ולהזריק אותם לתוך ממשק המשתמש בצורה יעילה.
+ */
 public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.RequestViewHolder> {
 
     private ArrayList<Request> dataSet;
     private String showId;
+    private boolean isArtist;
 
-    // הבנאי מקבל את רשימת הבקשות ואת ה-ID של ההופעה הנוכחית
-    public RequestsAdapter(ArrayList<Request> dataSet, String showId) {
+    // בנאי המאתחל את האדפטור עם רשימת הנתונים, מזהה המופע הנוכחי,
+    // ודגל 'isArtist' שקובע אילו רכיבי UI יהיו גלויים (למשל כפתור ה-"V").
+    public RequestsAdapter(ArrayList<Request> dataSet, String showId, boolean isArtist) {
         this.dataSet = dataSet;
         this.showId = showId;
+        this.isArtist = isArtist;
     }
 
+    // פונקציה האחראית על יצירת ה-ViewHolder. היא "מנפחת" (Inflating) את ה-XML של שורת הבקשה הבודדת.
     @NonNull
     @Override
     public RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // ניפוח העיצוב של שורת בקשה בודדת
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_request, parent, false);
         return new RequestViewHolder(view);
     }
 
+    // הפונקציה המרכזית המחברת בין הנתונים ל-UI (Data Binding).
+    // היא מעדכנת את הטקסטים, הזמנים, והעיצוב הוויזואלי של כל שורה ברשימה.
     @Override
     public void onBindViewHolder(@NonNull RequestViewHolder holder, int position) {
         Request request = dataSet.get(position);
 
-        // הצגת הנתונים ב-UI
+        // עדכון תוכן הבקשה ושם השולח.
         holder.tvContent.setText(request.getContent());
         holder.tvSender.setText("מאת: " + request.getSenderName());
 
-        // מאזין ללחיצה ארוכה - מחיקה מה-Firebase
-        holder.itemView.setOnLongClickListener(v -> {
-            String rid = request.getRequestId();
-            if (rid != null && showId != null) {
-                deleteRequestFromFirebase(rid, v);
-            } else {
-                Toast.makeText(v.getContext(), "שגיאה: חסר מזהה בקשה", Toast.LENGTH_SHORT).show();
+        // פורמט של הזמן: הפיכת ה-Timestamp (מילישניות) למחרוזת קריאה בפורמט HH:mm.
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        holder.tvTime.setText(sdf.format(new Date(request.getTimestamp())));
+
+        // ניהול מצבי תצוגה דינמיים: במידה והשיר כבר בוצע, העיצוב משתנה (מסגרת ירוקה ושקיפות).
+        MaterialCardView card = (MaterialCardView) holder.itemView;
+        if (request.isPlayed()) {
+            card.setStrokeWidth(4);
+            card.setAlpha(0.5f);
+            holder.btnDone.setVisibility(View.GONE);
+        } else {
+            card.setStrokeWidth(0);
+            card.setAlpha(1.0f);
+            // הצגת כפתור ה-"בוצע" רק אם המשתמש הוא האמן ורק אם השיר טרם נוגן.
+            holder.btnDone.setVisibility(isArtist ? View.VISIBLE : View.GONE);
+        }
+
+        // מאזין ללחיצה על כפתור ה-"V" (בוצע).
+        // במקום למחוק את הבקשה, אנחנו מעדכנים את השדה 'played' ב-Firebase Realtime Database.
+        // בזכות ה-ValueEventListener בפרגמנט, המפה תתעדכן אוטומטית ברגע שהערך ישתנה בשרת.
+        holder.btnDone.setOnClickListener(v -> {
+            if (request.getRequestId() != null && showId != null) {
+                FirebaseDatabase.getInstance().getReference("Requests")
+                        .child(showId)
+                        .child(request.getRequestId())
+                        .child("played").setValue(true);
             }
-            return true;
         });
     }
 
-    private void deleteRequestFromFirebase(String requestId, View view) {
-        // גישה ישירה לבקשה הספציפית תחת ההופעה הספציפית
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Requests")
-                .child(showId)
-                .child(requestId);
-
-        ref.removeValue().addOnSuccessListener(aVoid -> {
-            // הערה: אין צורך למחוק ידנית מה-dataSet,
-            // ה-ValueEventListener בפרגמנט יזהה את המחיקה ויעדכן את הרשימה לבד!
-            Toast.makeText(view.getContext(), "השיר בוצע והוסר מהרשימה", Toast.LENGTH_SHORT).show();
-        }).addOnFailureListener(e -> {
-            Toast.makeText(view.getContext(), "שגיאה במחיקה: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        });
-    }
-
+    // מחזירה את מספר הבקשות הקיימות ברשימה.
     @Override
-    public int getItemCount() {
-        return dataSet != null ? dataSet.size() : 0;
-    }
+    public int getItemCount() { return dataSet != null ? dataSet.size() : 0; }
 
+    /**
+     * ViewHolder - מחלקה פנימית המייצגת את רכיבי הממשק של שורה אחת.
+     * שימוש ב-ViewHolder חוסך קריאות findViewById יקרות ומבטיח גלילה חלקה.
+     */
     public static class RequestViewHolder extends RecyclerView.ViewHolder {
-        TextView tvContent;
-        TextView tvSender;
+        TextView tvContent, tvSender, tvTime;
+        ImageView btnDone;
 
         public RequestViewHolder(@NonNull View itemView) {
             super(itemView);
-            // קישור לפקדים מה-XML (item_request.xml)
             tvContent = itemView.findViewById(R.id.tvRequestContent);
             tvSender = itemView.findViewById(R.id.tvSenderName);
+            tvTime = itemView.findViewById(R.id.tvRequestTime);
+            btnDone = itemView.findViewById(R.id.btnDoneRequest);
         }
     }
 }

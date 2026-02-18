@@ -41,7 +41,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="איך תרצו להיכנס?"
+            android:text="בתור מה תרצו להתחבר?"
             android:textSize="14sp"
             android:layout_marginBottom="8dp"/>
 
@@ -53,29 +53,32 @@
             app:selectionRequired="true"
             android:layout_marginBottom="24dp">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnTypeUser"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="130dp"
                 android:layout_height="wrap_content"
                 android:text="בליין 🎉"
-                android:backgroundTint="@color/white"
                 android:textColor="@color/beat_primary"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                app:strokeColor="@color/beat_primary" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnTypeArtist"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="130dp"
                 android:layout_height="wrap_content"
                 android:text="אמן 🎤"
-                android:backgroundTint="@color/white"
                 android:textColor="@color/beat_primary"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                app:strokeColor="@color/beat_primary" />
+
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="אימייל"
+            android:hint="דואר אלקטרוני(E-mail)"
+            tools:text="user@example.com"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:boxBackgroundColor="@color/white"
             android:layout_marginBottom="12dp">
@@ -90,9 +93,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="סיסמה"
+            android:hint="סיסמה(Password)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:boxBackgroundColor="@color/white"
             app:endIconMode="password_toggle"

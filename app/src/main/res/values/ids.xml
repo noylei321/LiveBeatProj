@@ -4,8 +4,8 @@
     <item name="etBirthDate" type="id" />
     <item name="etPhone" type="id" />
     <item name="spinnerGenre" type="id" />
-    <item name="imgArtistProfileUpload" type="id" />
-    <item name="FloatingActionButton" type="id" />
+    <item name="imgUserProfileUpload" type="id" />
+    <item name="FloatingActionButtonUser" type="id" />
     <item name="etArtistFullName" type="id" />
     <item name="etStageName" type="id" />
     <item name="etArtistBirthDate" type="id" />

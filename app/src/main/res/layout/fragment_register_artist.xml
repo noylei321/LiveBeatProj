@@ -47,6 +47,7 @@
                 app:fabSize="mini"
                 app:tint="@color/white" />
         </RelativeLayout>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -64,10 +65,70 @@
             android:alpha="0.6"
             android:layout_marginBottom="8dp"/>
 
-        <com.google.android.material.textfield.TextInputLayout
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="בחר סוג אמן:"
+            android:textSize="13sp"
+            android:layout_gravity="end"
+            android:layout_marginStart="4dp"
+            android:layout_marginBottom="4dp"
+            android:alpha="0.8"/>
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/artistTypeToggleGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_full_name_private"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            app:checkedButton="@id/btnTypeMusician"
+            android:layout_marginBottom="12dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTypeDJ"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="DJ"
+                android:textSize="14sp"
+                app:strokeColor="@color/beat_primary"
+                app:icon="@drawable/ic_dj"
+                app:iconTint="@null"
+                app:iconSize="30sp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTypeMusician"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="זמר"
+                android:textSize="14sp"
+                app:strokeColor="@color/beat_primary"
+                app:icon="@drawable/ic_singer"
+                app:iconTint="@null"
+                app:iconSize="30sp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTypeComedian"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="קומיקאי"
+                android:textSize="14sp"
+                app:icon="@drawable/ic_standup"
+                app:iconTint="@null"
+                app:iconSize="30sp"
+                app:strokeColor="@color/beat_primary" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilArtistFullName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="שם מלא(full name)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             app:boxBackgroundColor="@color/white"
             android:layout_marginBottom="2dp">
@@ -82,9 +143,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilStageName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_stage_name"
+            android:hint="שם במה(stage name)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             app:boxBackgroundColor="@color/white"
             app:startIconDrawable="@android:drawable/ic_media_play"
@@ -106,10 +168,11 @@
             android:layout_marginBottom="2dp">
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilArtistBirthDate"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_birth_date"
+                android:hint="תאריך לידה(birth date)"
                 android:layout_marginEnd="2dp"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                 app:boxBackgroundColor="@color/white">
@@ -126,10 +189,11 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilInstrument"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_instrument"
+                android:hint="כלי נגינה/ציוד(instruments)"
                 android:layout_marginStart="2dp"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                 app:boxBackgroundColor="@color/white">
@@ -145,9 +209,10 @@
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilArtistEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_email_biz"
+            android:hint="דואר אלקטרוני(E-mail)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             app:boxBackgroundColor="@color/white"
             app:startIconDrawable="@android:drawable/ic_dialog_email"
@@ -163,9 +228,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilArtistUserName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_username"
+            android:hint="שם משתמש(username)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             app:boxBackgroundColor="@color/white"
             android:layout_marginBottom="2dp">
@@ -180,9 +246,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilArtistPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_password"
+            android:hint="סיסמה(password)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             app:boxBackgroundColor="@color/white"
             app:endIconMode="password_toggle"
@@ -199,9 +266,30 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilArtistConfirmPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_phone_biz"
+            android:hint="אישור סיסמה(confirm password)"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            app:boxBackgroundColor="@color/white"
+            app:endIconMode="password_toggle"
+            app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
+            android:layout_marginBottom="2dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etArtistConfirmPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:inputType="textPassword"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilArtistPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="מספר טלפון(phone number)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             app:boxBackgroundColor="@color/white"
             app:startIconDrawable="@android:drawable/ic_menu_call"
@@ -216,55 +304,47 @@
                 android:layout_height="wrap_content"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="4dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="0dp"
-                android:layout_weight="1"
+            android:hint="ספר קצת על עצמך (Bio - רשות)"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxBackgroundColor="@color/white"
+            android:layout_marginBottom="8dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDescription"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_social_link"
-                android:layout_marginEnd="2dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                app:boxBackgroundColor="@color/white">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etSocialLink"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="13sp"
-                    android:paddingTop="10dp"
-                    android:paddingBottom="10dp"
-                    android:inputType="textUri"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                android:inputType="textMultiLine"
+                android:gravity="top"
+                android:lines="3"
+                android:textSize="14sp"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="0dp"
-                android:layout_weight="1"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSocialLink"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="לינק לאינסטגרם(instgram link)"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            app:boxBackgroundColor="@color/white">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSocialLink"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_bio"
-                android:layout_marginStart="2dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                app:boxBackgroundColor="@color/white">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etDescription"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="13sp"
-                    android:paddingTop="10dp"
-                    android:paddingBottom="10dp"
-                    android:inputType="text"
-                    android:maxLines="1"/>
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
+                android:textSize="13sp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:inputType="textUri"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:background="@drawable/spinner_bg"
-            android:layout_marginBottom="8dp">
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp">
             <Spinner
                 android:id="@+id/spinnerArtistGenre"
                 android:layout_width="match_parent"

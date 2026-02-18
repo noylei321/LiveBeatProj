@@ -2,11 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="#121212"
     android:padding="16dp">
 
     <LinearLayout
+        android:id="@+id/tvLiveStatusHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -23,30 +25,102 @@
             android:layout_marginEnd="10dp"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:id="@+id/layoutArtLike"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginEnd="32dp"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:id="@+id/imgArtLike"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/btn_star_big_off"
+                app:tint="#888888"/>
+            <TextView
+                android:id="@+id/tvArtLikeCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="#FFD700"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutArtDislike"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:id="@+id/imgArtDislike"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="#888888"/>
+            <TextView
+                android:id="@+id/tvArtDislikeCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="#FF4444"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="בקשות מהקהל בזמן אמת:"
+        android:text="בקשות שמחכות לך:"
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         android:layout_marginBottom="10dp"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvLiveRequests"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#1E1E1E"
-        android:scrollbars="vertical"/>
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvLiveRequests"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#1E1E1E"
+            android:scrollbars="vertical"/>
+
+        <TextView
+            android:id="@+id/tvNoRequests"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="עוד אין בקשות... תן להם בראש! 🎤"
+            android:textColor="#888888"
+            android:textSize="16sp"
+            android:visibility="gone"/>
+    </FrameLayout>
 
     <Button
         android:id="@+id/btnEndShow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="סיים הופעה 🏁"
+        android:text="סיים הופעה וסגור בקשות 🏁"
         android:backgroundTint="#D32F2F"
         android:layout_marginTop="20dp"
         android:textSize="18sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:padding="12dp"/>
 
 </LinearLayout>

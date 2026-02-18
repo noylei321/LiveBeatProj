@@ -3,31 +3,31 @@ package com.example.myapplication;
 public class Show {
     private String showId;
     private String artistId;
+    private String stageName;
+    private String artistType; // DJ / Musician / Comedian
     private String location;
     private String time;
     private String genre;
     private String date;
     private double latitude;
     private double longitude;
+    private boolean live; // 🔹 תזכורת: לקרוא לזה 'live' כדי שיתאים לעדכונים מהדאשבורד
 
-    // השדה ששולט על הכפתור הסגול ועל הכניסה של הבליין
-    private boolean isLive;
+    // חובה בשביל Firebase
+    public Show() { }
 
-    // בנאי ריק חובה עבור Firebase
-    public Show() {
-    }
-
-    // בנאי מלא מעודכן
-    public Show(String showId, String artistId, String location, String time, String genre, String date, double latitude, double longitude) {
+    public Show(String showId, String artistId, String stageName, String artistType, String location, String time, String genre, String date, double latitude, double longitude) {
         this.showId = showId;
         this.artistId = artistId;
+        this.stageName= stageName;
+        this.artistType = artistType;
         this.location = location;
         this.time = time;
         this.genre = genre;
         this.date = date;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.isLive = false; // ברירת מחדל: הופעה לא פעילה ברגע היצירה
+        this.live = false;
     }
 
     // Getters ו-Setters
@@ -36,6 +36,11 @@ public class Show {
 
     public String getArtistId() { return artistId; }
     public void setArtistId(String artistId) { this.artistId = artistId; }
+    public String getStageName() { return stageName; }
+    public void setStageName(String stageName) { this.stageName = stageName; }
+
+    public String getArtistType() { return artistType; }
+    public void setArtistType(String artistType) { this.artistType = artistType; }
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
@@ -55,7 +60,6 @@ public class Show {
     public double getLongitude() { return longitude; }
     public void setLongitude(double longitude) { this.longitude = longitude; }
 
-    // פונקציות ה-Live החדשות שביקשת
-    public boolean isLive() { return isLive; }
-    public void setLive(boolean live) { isLive = live; }
+    public boolean isLive() { return live; }
+    public void setLive(boolean live) { this.live = live; }
 }

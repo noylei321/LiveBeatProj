@@ -6,66 +6,110 @@
     app:startDestination="@id/loginFragment">
 
     <fragment
-        android:id="@+id/artistDashboardFragment"
-        android:name="com.example.myapplication.ArtistDashboardFragment"
-        android:label="fragment_artist_dashboard"
-        tools:layout="@layout/fragment_artist_dashboard" >
-        <action
-            android:id="@+id/action_artistDashboardFragment_to_fragment_artist_live"
-            app:destination="@id/fragment_artist_live" />
-    </fragment>
-    <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.myapplication.LoginFragment"
-        android:label="fragment_login"
+        android:label="התחברות"
         tools:layout="@layout/fragment_login" >
-        <action
-            android:id="@+id/action_loginFragment_to_registerUserFragment"
-            app:destination="@id/registerUserFragment" />
-        <action
-            android:id="@+id/action_loginFragment_to_registerArtistFragment"
-            app:destination="@id/registerArtistFragment" />
-        <action
-            android:id="@+id/action_loginFragment_to_mapFragment"
-            app:destination="@id/mapFragment" />
-        <action
-            android:id="@+id/action_loginFragment_to_artistDashboardFragment"
-            app:destination="@id/artistDashboardFragment" />
+        <action android:id="@+id/action_loginFragment_to_registerUserFragment" app:destination="@id/registerUserFragment" />
+        <action android:id="@+id/action_loginFragment_to_registerArtistFragment" app:destination="@id/registerArtistFragment" />
+        <action android:id="@+id/action_loginFragment_to_mapFragment" app:destination="@id/mapFragment" />
+        <action android:id="@+id/action_loginFragment_to_artistDashboardFragment" app:destination="@id/artistDashboardFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/mapFragment"
         android:name="com.example.myapplication.MapFragment"
-        android:label="fragment_map"
+        android:label="מפת הופעות"
         tools:layout="@layout/fragment_map" >
+        <action android:id="@+id/action_mapFragment_to_showRequestsUser" app:destination="@id/showRequestsUser" />
         <action
-            android:id="@+id/action_mapFragment_to_sendRequestFragment"
-            app:destination="@id/sendRequestFragment" />
+            android:id="@+id/action_mapFragment_to_editUserProfileFragment"
+            app:destination="@id/editUserProfileFragment" />
     </fragment>
+
     <fragment
-        android:id="@+id/registerUserFragment"
-        android:name="com.example.myapplication.RegisterUserFragment"
-        android:label="fragment_register_user"
-        tools:layout="@layout/fragment_register_user" >
-        <action
-            android:id="@+id/action_registerUserFragment_to_loginFragment"
-            app:destination="@id/loginFragment" />
+        android:id="@+id/showRequestsUser"
+        android:name="com.example.myapplication.ShowRequestsUser"
+        android:label="בקשות בהופעה"
+        tools:layout="@layout/user_show_requests">
+        <action android:id="@+id/action_showRequestsUser_to_sendRequestFragment" app:destination="@id/sendRequestFragment" />
+        <action android:id="@+id/action_showRequestsUser_to_addShowDialogFragment" app:destination="@id/addShowDialogFragment" />
     </fragment>
-    <fragment
-        android:id="@+id/registerArtistFragment"
-        android:name="com.example.myapplication.RegisterArtistFragment"
-        android:label="fragment_register_artist"
-        tools:layout="@layout/fragment_register_artist" >
-        <action
-            android:id="@+id/action_registerArtistFragment_to_loginFragment"
-            app:destination="@id/loginFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/fragment_artist_live"
-        android:name="com.example.myapplication.fragment_artist_live"
-        android:label="fragment_artist_live"
-        tools:layout="@layout/fragment_artist_live" />
+
     <fragment
         android:id="@+id/sendRequestFragment"
         android:name="com.example.myapplication.SendRequestFragment"
-        android:label="SendRequestFragment" />
+        android:label="שליחת בקשה"
+        tools:layout="@layout/fragment_send_request" />
+
+    <dialog
+        android:id="@+id/addShowDialogFragment"
+        android:name="com.example.myapplication.AddShowDialogFragment"
+        android:label="הוספת מופע חדש"
+        tools:layout="@layout/dialog_add_show" />
+
+    <fragment
+        android:id="@+id/artistDashboardFragment"
+        android:name="com.example.myapplication.ArtistDashboardFragment"
+        android:label="מרכז אמן"
+        tools:layout="@layout/fragment_artist_dashboard" >
+        <action android:id="@+id/action_artistDashboardFragment_to_artistLiveFragment" app:destination="@id/artistLiveFragment" />
+        <action
+            android:id="@+id/action_artistDashboardFragment_to_editArtistProfileFragment"
+            app:destination="@id/editArtistProfileFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/artistLiveFragment"
+        android:name="com.example.myapplication.ArtistLiveFragment"
+        android:label="ניהול הופעה חיה"
+        tools:layout="@layout/fragment_artist_live" />
+
+    <fragment
+        android:id="@+id/registerUserFragment"
+        android:name="com.example.myapplication.RegisterUserFragment"
+        android:label="רישום בליין"
+        tools:layout="@layout/fragment_register_user" />
+
+    <fragment
+        android:id="@+id/registerArtistFragment"
+        android:name="com.example.myapplication.RegisterArtistFragment"
+        android:label="רישום אמן"
+        tools:layout="@layout/fragment_register_artist" />
+    <fragment
+        android:id="@+id/artistProfileFragment"
+        android:name="com.example.myapplication.ArtistProfileFragment"
+        android:label="מסך פרופיל אמן"
+        tools:layout="@layout/fragment_artist_profile" >
+        <action
+            android:id="@+id/action_artistProfileFragment_to_artistDashboardFragment"
+            app:destination="@id/artistDashboardFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/userProfileFragment"
+        android:name="com.example.myapplication.UserProfileFragment"
+        android:label="UserProfileFragment"
+        tools:layout="@layout/fragment_user_profile">
+        <action
+            android:id="@+id/action_userProfileFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editArtistProfileFragment"
+        android:name="com.example.myapplication.EditArtistProfileFragment"
+        android:label="EditArtistProfileFragment"
+        tools:layout="@layout/fragment_edit_artist_profile">
+        <action
+            android:id="@+id/action_editArtistProfileFragment_to_artistProfileFragment"
+            app:destination="@id/artistProfileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editUserProfileFragment"
+        android:name="com.example.myapplication.EditUserProfileFragment"
+        android:label="EditUserProfileFragment"
+        tools:layout="@layout/fragment_edit_user_profile">
+        <action
+            android:id="@+id/action_editUserProfileFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
+    </fragment>
 </navigation>

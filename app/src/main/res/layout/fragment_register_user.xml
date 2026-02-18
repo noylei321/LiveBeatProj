@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/beat_bg_light">
+    android:background="@color/beat_bg_light"
+    tools:theme="@style/Theme.MyApplication"
+    tools:context=".RegisterUserFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,6 +15,41 @@
         android:orientation="vertical"
         android:padding="16dp"
         android:gravity="center_horizontal">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/imgUserProfileUpload"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="#F0F0F0"
+                android:clickable="true"
+                android:contentDescription="Profile Picture"
+                android:focusable="true"
+                android:padding="2dp"
+                android:scaleType="centerInside"
+                android:src="@android:drawable/ic_menu_camera"
+                app:shapeAppearanceOverlay="@style/CircleImage"
+                app:strokeColor="@color/beat_primary"
+                app:strokeWidth="2dp" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/FloatingActionButtonUser"
+                android:layout_width="61dp"
+                android:layout_height="55dp"
+                android:layout_alignEnd="@id/imgUserProfileUpload"
+                android:layout_alignBottom="@id/imgUserProfileUpload"
+                android:contentDescription="Add Photo"
+                android:elevation="2dp"
+                android:src="@android:drawable/ic_input_add"
+                app:backgroundTint="@color/beat_primary"
+                app:fabSize="mini"
+                app:tint="@color/white" />
+        </RelativeLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -32,9 +70,10 @@
             android:layout_marginBottom="16dp"/>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilFullName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="שם מלא"
+            android:hint="שם מלא(full name)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:boxBackgroundColor="@color/white"
             android:layout_marginBottom="8dp">
@@ -49,9 +88,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilUsername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="שם משתמש (כינוי)"
+            android:hint="שם משתמש (username)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:boxBackgroundColor="@color/white"
             android:layout_marginBottom="8dp">
@@ -66,9 +106,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="סיסמה"
+            android:hint="סיסמה(password)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:boxBackgroundColor="@color/white"
             app:endIconMode="password_toggle"
@@ -85,9 +126,30 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilConfirmPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="אימייל"
+            android:hint="אישור סיסמה(confirm password)"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxBackgroundColor="@color/white"
+            app:endIconMode="password_toggle"
+            app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
+            android:layout_marginBottom="8dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etConfirmPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:inputType="textPassword"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="דואר אלקטרוני(E-mail)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:boxBackgroundColor="@color/white"
             app:startIconDrawable="@android:drawable/ic_dialog_email"
@@ -103,9 +165,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="מספר טלפון"
+            android:hint="מספר טלפון(phone number)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:boxBackgroundColor="@color/white"
             app:startIconDrawable="@android:drawable/ic_menu_call"
@@ -121,9 +184,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilBirthDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="תאריך לידה"
+            android:hint="תאריך לידה(birth date)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:boxBackgroundColor="@color/white"
             app:startIconDrawable="@android:drawable/ic_menu_today"
@@ -138,6 +202,24 @@
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
                 android:inputType="date"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilBio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="ספר קצת על עצמך (Bio - רשות)"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxBackgroundColor="@color/white"
+            android:layout_marginBottom="8dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etBio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:gravity="top"
+                android:lines="3"
+                android:textSize="14sp"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
