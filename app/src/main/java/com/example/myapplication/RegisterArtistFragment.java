@@ -2,34 +2,47 @@ package com.example.myapplication;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color; // 🔹 שינוי: ייבוא עבור צבע טקסט לבן
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter; // 🔹 שינוי: ייבוא עבור האדפטור של החיפוש
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView; // 🔹 שינוי: ייבוא רכיב החיפוש
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class RegisterArtistFragment extends Fragment {
 
     private ShapeableImageView imgProfile;
     private Uri imageUri = null;
     private MaterialButtonToggleGroup artistTypeToggleGroup;
+
+    // 🔹 שינוי: רכיבי החיפוש והתצוגה הנגללת
+    private ChipGroup cgSelectedGenres;
+    private MaterialAutoCompleteTextView actvGenreSearch;
 
     private TextInputLayout tilFullName, tilStageName, tilBirthDate, tilInstrument,
             tilEmail, tilUserName, tilPassword, tilConfirmPassword,
@@ -83,7 +96,11 @@ public class RegisterArtistFragment extends Fragment {
         EditText etSocialLink = view.findViewById(R.id.etSocialLink);
         EditText etDescription = view.findViewById(R.id.etDescription);
 
-        Spinner spinnerGenre = view.findViewById(R.id.spinnerArtistGenre);
+        // 🔹 שינוי: אתחול מנגנון החיפוש והז'אנרים
+        cgSelectedGenres = view.findViewById(R.id.cgSelectedGenres);
+        actvGenreSearch = view.findViewById(R.id.actvGenreSearch);
+        setupGenreSearch();
+
         Button btnRegister = view.findViewById(R.id.btnRegisterArtist);
 
         tilFullName = view.findViewById(R.id.tilArtistFullName);
@@ -191,6 +208,13 @@ public class RegisterArtistFragment extends Fragment {
                 isValid = false;
             }
 
+            // 🔹 שינוי: איסוף ז'אנרים שנבחרו לתוך מחרוזת מופרדת בפסיקים
+            String genres = getSelectedGenres();
+            if (genres.isEmpty()) {
+                Toast.makeText(getContext(), "נא לבחור לפחות ז'אנר אחד", Toast.LENGTH_SHORT).show();
+                isValid = false;
+            }
+
             if (!isValid) return;
 
             // שליפת הערך מה-ToggleGroup לקביעת תת-הקטגוריה של האמן.
@@ -203,7 +227,7 @@ public class RegisterArtistFragment extends Fragment {
             Artist artistToSend = new Artist(
                     fullName, stageName, subCategory, birthDate, instrument,
                     email, userName, phone, socialLink, description,
-                    spinnerGenre.getSelectedItem() != null ? spinnerGenre.getSelectedItem().toString() : "",
+                    genres, // 🔹 שינוי: שליחת רשימת הז'אנרים
                     ""
             );
 
@@ -212,6 +236,51 @@ public class RegisterArtistFragment extends Fragment {
                 ((MainActivity) getActivity()).registerNewArtist(email, password, artistToSend, imageUri);
             }
         });
+    }
+
+    // 🔹 שינוי: הגדרת מנגנון החיפוש והוספת צ'יפים
+    private void setupGenreSearch() {
+        String[] allGenres = getResources().getStringArray(R.array.music_genres);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, allGenres);
+        actvGenreSearch.setAdapter(adapter);
+
+        // הוספת ז'אנר בלחיצה על הצעה מהרשימה
+        actvGenreSearch.setOnItemClickListener((parent, view, position, id) -> {
+            String selected = (String) parent.getItemAtPosition(position);
+            addGenreChip(selected);
+            actvGenreSearch.setText(""); // ניקוי השדה
+        });
+    }
+
+    // 🔹 שינוי: פונקציית עזר ליצירת צ'יפ עם כפתור מחיקה
+    private void addGenreChip(String text) {
+        // מניעת כפילויות
+        for (int i = 0; i < cgSelectedGenres.getChildCount(); i++) {
+            if (((Chip) cgSelectedGenres.getChildAt(i)).getText().toString().equals(text)) return;
+        }
+
+        Chip chip = new Chip(requireContext());
+        chip.setText(text);
+        chip.setCloseIconVisible(true);
+        chip.setOnCloseIconClickListener(v -> cgSelectedGenres.removeView(chip));
+
+        // עיצוב הצ'יפ שנבחר
+        chip.setChipBackgroundColorResource(R.color.beat_primary);
+        chip.setTextColor(Color.WHITE);
+        chip.setCloseIconTint(ColorStateList.valueOf(Color.WHITE));
+
+        cgSelectedGenres.addView(chip);
+    }
+
+    // 🔹 שינוי: פונקציה האוספת את כל הטקסטים מהצ'יפים שנבחרו
+    private String getSelectedGenres() {
+        List<String> selectedList = new ArrayList<>();
+        for (int i = 0; i < cgSelectedGenres.getChildCount(); i++) {
+            Chip chip = (Chip) cgSelectedGenres.getChildAt(i);
+            selectedList.add(chip.getText().toString());
+        }
+        return TextUtils.join(", ", selectedList);
     }
 
     // פונקציית עזר המאפסת את מצב השגיאה (Error State) של כל רכיבי ה-Material Design בטופס.

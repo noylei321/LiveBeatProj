@@ -2,8 +2,11 @@ package com.example.myapplication;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList; // 🔹 שינוי: ייבוא עבור צבעי הצ'יפים
+import android.graphics.Color; // 🔹 שינוי: ייבוא לצבע לבן
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils; // 🔹 שינוי: ייבוא עבור איחוד מחרוזות
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +16,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -24,7 +26,10 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.chip.Chip; // 🔹 שינוי: ייבוא Chip
+import com.google.android.material.chip.ChipGroup; // 🔹 שינוי: ייבוא ChipGroup
 import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView; // 🔹 שינוי: ייבוא רכיב החיפוש
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -35,17 +40,23 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList; // 🔹 שינוי: ייבוא ArrayList
 import java.util.Calendar;
+import java.util.List; // 🔹 שינוי: ייבוא List
 
 public class EditUserProfileFragment extends Fragment {
 
+    // 🔹 הצהרה על כל משתני ה-UI של המחלקה
     private ShapeableImageView imgProfile;
     private EditText etFullName, etUsername, etEmail, etBirthDate, etPassword, etConfirmPassword, etPhone, etBio;
     private TextInputLayout tilConfirmPassword;
-    private Spinner spinnerGenre;
+
+    // 🔹 שינוי: הצהרה על רכיבי הז'אנרים החדשים (החליפו את ה-Spinner)
+    private ChipGroup cgUserSelectedGenres;
+    private MaterialAutoCompleteTextView actvUserGenreSearch;
+
     private Button btnSave;
     private ProgressBar progressBar;
-
     private LinearLayout layoutPasswordFields, layoutTogglePassword;
     private ImageView imgPasswordChevron;
 
@@ -86,6 +97,7 @@ public class EditUserProfileFragment extends Fragment {
         }
 
         initViews(view);      // אתחול רכיבי ה-UI.
+        setupGenreSearch();    // 🔹 הגדרת מנגנון החיפוש וה-Autocomplete
         loadUserData();       // שליפת המידע הקיים מהשרת.
         setupListeners();     // הגדרת מאזינים לפעולות המשתמש.
     }
@@ -101,7 +113,11 @@ public class EditUserProfileFragment extends Fragment {
         etConfirmPassword = view.findViewById(R.id.etEditUserConfirmPassword);
         etPhone = view.findViewById(R.id.etEditUserPhone);
         etBio = view.findViewById(R.id.etEditUserBio);
-        spinnerGenre = view.findViewById(R.id.spinnerEditUserGenre);
+
+        // 🔹 קישור לרכיבי הז'אנרים החדשים
+        cgUserSelectedGenres = view.findViewById(R.id.cgUserSelectedGenres);
+        actvUserGenreSearch = view.findViewById(R.id.actvUserGenreSearch);
+
         btnSave = view.findViewById(R.id.btnSaveUserChanges);
         tilConfirmPassword = view.findViewById(R.id.tilEditUserConfirmPassword);
         progressBar = view.findViewById(R.id.progressBarEditUser);
@@ -163,11 +179,14 @@ public class EditUserProfileFragment extends Fragment {
                     Glide.with(this).load(currentUser.getProfileImageUrl()).into(imgProfile);
                 }
 
-                // עדכון ה-Spinner (הז'אנר המועדף) לערך שנשמר ב-Database.
-                if (spinnerGenre.getAdapter() != null) {
-                    ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinnerGenre.getAdapter();
-                    int pos = adapter.getPosition(currentUser.getGenre());
-                    if (pos >= 0) spinnerGenre.setSelection(pos);
+                // 🔹 טעינת הז'אנרים השמורים והפיכתם לצ'יפים (מפרק את המחרוזת המופרדת בפסיקים)
+                cgUserSelectedGenres.removeAllViews();
+                String savedGenres = currentUser.getGenre();
+                if (savedGenres != null && !savedGenres.isEmpty()) {
+                    String[] genresArray = savedGenres.split(", ");
+                    for (String g : genresArray) {
+                        addUserGenreChip(g);
+                    }
                 }
             }
         });
@@ -188,14 +207,12 @@ public class EditUserProfileFragment extends Fragment {
             // וולידציה לחוזק הסיסמה והתאמה בין השדות.
             if (pass.length() < 6) {
                 etPassword.setError("מינימום 6 תווים");
-                progressBar.setVisibility(View.GONE);
-                btnSave.setEnabled(true);
+                resetUIState();
                 return;
             }
             if (!pass.equals(confirm)) {
                 tilConfirmPassword.setError("הסיסמאות לא תואמות");
-                progressBar.setVisibility(View.GONE);
-                btnSave.setEnabled(true);
+                resetUIState();
                 return;
             }
 
@@ -206,8 +223,7 @@ public class EditUserProfileFragment extends Fragment {
                             Toast.makeText(getContext(), "הסיסמה עודכנה במערכת", Toast.LENGTH_SHORT).show();
                         })
                         .addOnFailureListener(e -> {
-                            progressBar.setVisibility(View.GONE);
-                            btnSave.setEnabled(true);
+                            resetUIState();
                             // טיפול בשגיאה הדורשת התחברות מחדש (Security Rule של גוגל לשינוי סיסמה).
                             if (e instanceof com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException) {
                                 Toast.makeText(getContext(), "עליך להתחבר מחדש כדי לשנות סיסמה", Toast.LENGTH_LONG).show();
@@ -216,12 +232,14 @@ public class EditUserProfileFragment extends Fragment {
             }
         }
 
-        // עדכון אובייקט ה-User המקומי בנתונים החדשים מהשדות.
+        // 🔹 עדכון אובייקט ה-User המקומי בנתונים החדשים - תיקון שמות המשתנים העקביים
         currentUser.setFullName(etFullName.getText().toString().trim());
         currentUser.setBirthDate(etBirthDate.getText().toString().trim());
         currentUser.setPhone(etPhone.getText().toString().trim());
         currentUser.setBio(etBio.getText().toString().trim());
-        currentUser.setGenre(spinnerGenre.getSelectedItem().toString());
+
+        // 🔹 איסוף הז'אנרים המעודכנים מהצ'יפים שנבחרו
+        currentUser.setGenre(getSelectedGenres());
 
         // קבלת החלטה: העלאת תמונה חדשה ל-Storage או שמירת נתוני טקסט בלבד ל-Database.
         if (newImageUri != null) {
@@ -231,12 +249,53 @@ public class EditUserProfileFragment extends Fragment {
         }
     }
 
-    // פונקציה להעלאת קובץ המדיה ל-Firebase Storage. המרת ה-URI ל-Byte Array מבטיחה תהליך העלאה יציב יותר.
+    // 🔹 פונקציה להגדרת מנגנון החיפוש והצעות הז'אנרים
+    private void setupGenreSearch() {
+        String[] allGenres = getResources().getStringArray(R.array.music_genres);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, allGenres);
+        actvUserGenreSearch.setAdapter(adapter);
+
+        actvUserGenreSearch.setOnItemClickListener((parent, view, position, id) -> {
+            String selected = (String) parent.getItemAtPosition(position);
+            addUserGenreChip(selected);
+            actvUserGenreSearch.setText("");
+        });
+    }
+
+    // 🔹 פונקציית עזר ליצירת צ'יפ עם כפתור מחיקה
+    private void addUserGenreChip(String text) {
+        for (int i = 0; i < cgUserSelectedGenres.getChildCount(); i++) {
+            if (((Chip) cgUserSelectedGenres.getChildAt(i)).getText().toString().equals(text)) return;
+        }
+
+        Chip chip = new Chip(requireContext());
+        chip.setText(text);
+        chip.setCloseIconVisible(true);
+        chip.setOnCloseIconClickListener(v -> cgUserSelectedGenres.removeView(chip));
+
+        chip.setChipBackgroundColorResource(R.color.beat_pink);
+        chip.setTextColor(Color.WHITE);
+        chip.setCloseIconTint(ColorStateList.valueOf(Color.WHITE));
+
+        cgUserSelectedGenres.addView(chip);
+    }
+
+    // 🔹 פונקציה האוספת את כל הטקסטים מהצ'יפים שנבחרו למחרוזת אחת
+    private String getSelectedGenres() {
+        List<String> selectedList = new ArrayList<>();
+        for (int i = 0; i < cgUserSelectedGenres.getChildCount(); i++) {
+            Chip chip = (Chip) cgUserSelectedGenres.getChildAt(i);
+            selectedList.add(chip.getText().toString());
+        }
+        return TextUtils.join(", ", selectedList);
+    }
+
+    // פונקציה להעלאת קובץ המדיה ל-Firebase Storage. המרת ה-URI ל-Byte Array מבטיחה תהליך העלאה יציבה יותר.
     private void uploadImageAndSave() {
         byte[] data = getBytesFromUri(newImageUri);
         if (data == null) {
-            progressBar.setVisibility(View.GONE);
-            btnSave.setEnabled(true);
+            resetUIState();
             return;
         }
 
@@ -248,8 +307,7 @@ public class EditUserProfileFragment extends Fragment {
                 saveToDatabase();
             });
         }).addOnFailureListener(e -> {
-            progressBar.setVisibility(View.GONE);
-            btnSave.setEnabled(true);
+            resetUIState();
             Toast.makeText(getContext(), "שגיאה בהעלאה", Toast.LENGTH_LONG).show();
         });
     }
@@ -266,10 +324,15 @@ public class EditUserProfileFragment extends Fragment {
             // ניווט לפרגמנט הפרופיל תוך העברת ה-ID של המשתמש.
             Navigation.findNavController(requireView()).navigate(R.id.userProfileFragment, bundle);
         }).addOnFailureListener(e -> {
-            if (progressBar != null) progressBar.setVisibility(View.GONE);
-            if (btnSave != null) btnSave.setEnabled(true);
+            resetUIState();
             Toast.makeText(getContext(), "שגיאה בשמירת הנתונים", Toast.LENGTH_SHORT).show();
         });
+    }
+
+    // פונקציית עזר לאיפוס מצב ה-UI
+    private void resetUIState() {
+        if (progressBar != null) progressBar.setVisibility(View.GONE);
+        if (btnSave != null) btnSave.setEnabled(true);
     }
 
     // פונקציית עזר טכנית הקוראת את זרם הנתונים (Stream) מה-URI של התמונה וממירה אותו למערך בייטים.

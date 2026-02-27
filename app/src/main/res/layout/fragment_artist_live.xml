@@ -8,7 +8,6 @@
     android:padding="16dp">
 
     <LinearLayout
-        android:id="@+id/tvLiveStatusHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -16,6 +15,7 @@
         android:layout_marginBottom="20dp">
 
         <TextView
+            android:id="@+id/tvLiveStatusHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="🔴 LIVE ON STAGE"
@@ -80,6 +80,13 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
     <TextView
         android:layout_width="wrap_content"

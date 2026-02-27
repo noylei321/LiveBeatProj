@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -108,6 +109,12 @@ public class SendRequestFragment extends Fragment {
         String content = etRequestContent.getText().toString().trim();
         long currentTimestamp = System.currentTimeMillis();
 
+        //   שליפת ה-UID של המשתמש הנוכחי
+        String senderId = "";
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            senderId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
+
         if (name.isEmpty() || content.isEmpty()) {
             Toast.makeText(getContext(), "נא למלא את כל השדות", Toast.LENGTH_SHORT).show();
             return;
@@ -117,7 +124,8 @@ public class SendRequestFragment extends Fragment {
         String requestId = dbRef.push().getKey();
 
         // יצירת אובייקט הבקשה עם 5 הפרמטרים (כולל ה-false עבור הסטטוס played)
-        Request newRequest = new Request(requestId, content, name, currentTimestamp, false);
+        //   הזרקת ה-senderId כפרמטר רביעי (לפי המודל המעודכן)
+        Request newRequest = new Request(requestId, content, name, senderId, currentTimestamp, false);
 
         if (requestId != null) {
             dbRef.child(requestId).setValue(newRequest).addOnCompleteListener(task -> {

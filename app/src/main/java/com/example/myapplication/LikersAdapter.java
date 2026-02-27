@@ -60,12 +60,15 @@ public class LikersAdapter extends RecyclerView.Adapter<LikersAdapter.LikerViewH
         // כאן מיושמת לוגיקת הניווט המעבירה את ה-ID של המשתמש ודגל בוליאני (fromArtistLive)
         // המאפשר לפרגמנט היעד לדעת מהו מקור הניווט ולהתאים את כפתור ה-"חזור" בהתאם.
         holder.itemView.setOnClickListener(v -> {
-            Bundle bundle = new Bundle();
-            bundle.putString("userId", user.getUserId());
-            bundle.putBoolean("fromArtistLive", true);
+            if (user.getUserId() != null) { // 🔹 שינוי: הוספת בדיקת null למניעת קריסה
+                Bundle bundle = new Bundle();
+                bundle.putString("userId", user.getUserId());
+                bundle.putBoolean("fromArtistLive", true);
 
-            // שימוש ב-Navigation Component לביצוע המעבר בצורה מובנית ב-Navigation Graph.
-            Navigation.findNavController(v).navigate(R.id.userProfileFragment, bundle);
+                // 🔹 שינוי: ניווט דרך ה-Activity כדי למנוע שגיאת NavController מה-BottomSheet
+                Navigation.findNavController(androidx.fragment.app.FragmentActivity.class.cast(context), R.id.nav_host_fragment)
+                        .navigate(R.id.userProfileFragment, bundle);
+            }
         });
     }
 

@@ -158,14 +158,19 @@
                     android:layout_height="wrap_content"
                     android:text="ז'אנרים:"
                     android:textStyle="bold"
-                    android:layout_marginBottom="4dp"/>
+                    android:layout_marginBottom="8dp"/>
 
-                <TextView
-                    android:id="@+id/tvGenres"
+                <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Rock, Pop, Indie"
-                    android:textColor="@android:color/darker_gray"/>
+                    android:scrollbars="none">
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/cgProfileGenres"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:chipSpacingHorizontal="8dp"
+                        app:singleLine="true" />
+                </HorizontalScrollView>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -248,6 +253,24 @@
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="היסטוריית הופעות 🎸"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvArtistHistory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:nestedScrollingEnabled="false" />
 
     </LinearLayout>
 </ScrollView>

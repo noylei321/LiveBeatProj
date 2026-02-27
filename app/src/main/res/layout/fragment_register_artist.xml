@@ -328,7 +328,8 @@
             android:layout_height="wrap_content"
             android:hint="לינק לאינסטגרם(instgram link)"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-            app:boxBackgroundColor="@color/white">
+            app:boxBackgroundColor="@color/white"
+            android:layout_marginBottom="8dp">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etSocialLink"
                 android:layout_width="match_parent"
@@ -339,19 +340,37 @@
                 android:inputType="textUri"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <RelativeLayout
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilGenreSearch"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@drawable/spinner_bg"
-            android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp">
-            <Spinner
-                android:id="@+id/spinnerArtistGenre"
+            android:layout_height="wrap_content"
+            android:hint="חפש והוסף ז'אנר (ניתן לבחור ללא הגבלה)"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            app:boxBackgroundColor="@color/white"
+            app:startIconDrawable="@android:drawable/ic_menu_search"
+            android:layout_marginBottom="4dp">
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/actvGenreSearch"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:entries="@array/music_genres"
-                android:padding="4dp"/>
-        </RelativeLayout>
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:inputType="text"
+                android:completionThreshold="1"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginBottom="12dp">
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/cgSelectedGenres"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:chipSpacingHorizontal="8dp"
+                app:singleLine="true"
+                app:singleSelection="false" />
+        </HorizontalScrollView>
 
         <Button
             android:id="@+id/btnRegisterArtist"

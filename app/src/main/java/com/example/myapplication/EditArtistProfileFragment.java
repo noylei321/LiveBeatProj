@@ -2,30 +2,36 @@ package com.example.myapplication;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList; // 🔹 שינוי: ייבוא לצבעי ה-Chips
+import android.graphics.Color; // 🔹 שינוי: ייבוא לצבע טקסט לבן
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils; // 🔹 שינוי: ייבוא לאיחוד מחרוזות
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.ArrayAdapter; // 🔹 שינוי: ייבוא לאדפטור של החיפוש
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat; // 🔹 שינוי: ייבוא לשליפת צבעים
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.chip.Chip; // 🔹 שינוי: ייבוא Chip
+import com.google.android.material.chip.ChipGroup; // 🔹 שינוי: ייבוא ChipGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView; // 🔹 שינוי: ייבוא רכיב החיפוש
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -36,14 +42,20 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList; // 🔹 שינוי: ייבוא ArrayList
 import java.util.Calendar;
+import java.util.List; // 🔹 שינוי: ייבוא List
 
 public class EditArtistProfileFragment extends Fragment {
 
     private ShapeableImageView imgProfile;
     private EditText etFullName, etStageName, etUsername, etEmail, etBirthDate, etPassword, etConfirmPassword, etPhone, etDescription, etSocialLink, etInstrument;
     private TextInputLayout tilConfirmPassword;
-    private Spinner spinnerGenre;
+
+    // 🔹 שינוי: רכיבי החיפוש והתצוגה הנגללת החדשים
+    private ChipGroup cgSelectedGenres;
+    private MaterialAutoCompleteTextView actvGenreSearch;
+
     private Button btnSave;
     private ProgressBar progressBar;
     private FloatingActionButton fabEditPhoto;
@@ -86,6 +98,7 @@ public class EditArtistProfileFragment extends Fragment {
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         initViews(view);      // קישור רכיבי הממשק.
+        setupGenreSearch();    // 🔹 שינוי: הגדרת מנגנון החיפוש
         loadCurrentData();    // שליפת הנתונים הקיימים מהשרת.
         setupListeners();     // הגדרת מאזינים לפעולות המשתמש.
     }
@@ -104,7 +117,11 @@ public class EditArtistProfileFragment extends Fragment {
         etDescription = view.findViewById(R.id.etEditDescription);
         etSocialLink = view.findViewById(R.id.etEditSocialLink);
         etInstrument = view.findViewById(R.id.etEditInstrument);
-        spinnerGenre = view.findViewById(R.id.spinnerEditGenre);
+
+        // 🔹 שינוי: Binding לרכיבי הז'אנרים החדשים
+        cgSelectedGenres = view.findViewById(R.id.cgSelectedGenres);
+        actvGenreSearch = view.findViewById(R.id.actvGenreSearch);
+
         btnSave = view.findViewById(R.id.btnSaveArtistChanges);
         tilConfirmPassword = view.findViewById(R.id.tilEditConfirmPassword);
         progressBar = view.findViewById(R.id.progressBarEditArtist);
@@ -164,11 +181,14 @@ public class EditArtistProfileFragment extends Fragment {
                     Glide.with(this).load(currentArtist.getProfileImageUrl()).into(imgProfile);
                 }
 
-                // עדכון ה-Spinner (ז'אנר) לערך שנשמר ב-Database.
-                if (spinnerGenre.getAdapter() != null) {
-                    ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinnerGenre.getAdapter();
-                    int pos = adapter.getPosition(currentArtist.getGenre());
-                    if (pos >= 0) spinnerGenre.setSelection(pos);
+                // 🔹 שינוי: טעינת הז'אנרים מהמחרוזת השמורה והפיכתם ל-Chips
+                cgSelectedGenres.removeAllViews();
+                String savedGenres = currentArtist.getGenres();
+                if (savedGenres != null && !savedGenres.isEmpty()) {
+                    String[] genresArray = savedGenres.split(", ");
+                    for (String g : genresArray) {
+                        addGenreChip(g);
+                    }
                 }
             }
         });
@@ -220,7 +240,9 @@ public class EditArtistProfileFragment extends Fragment {
         currentArtist.setBio(etDescription.getText().toString().trim());
         currentArtist.setSocialLink(etSocialLink.getText().toString().trim());
         currentArtist.setInstrument(etInstrument.getText().toString().trim());
-        currentArtist.setGenre(spinnerGenre.getSelectedItem().toString());
+
+        // 🔹 שינוי: איסוף הז'אנרים המעודכנים מה-Chips שנשארו ב-ChipGroup
+        currentArtist.setGenres(getSelectedGenres());
 
         // החלטה האם להעלות תמונה חדשה או רק לעדכן נתוני טקסט.
         if (newImageUri != null) {
@@ -228,6 +250,48 @@ public class EditArtistProfileFragment extends Fragment {
         } else {
             saveToDatabase();
         }
+    }
+
+    // 🔹 שינוי: הגדרת מנגנון החיפוש
+    private void setupGenreSearch() {
+        String[] allGenres = getResources().getStringArray(R.array.music_genres);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, allGenres);
+        actvGenreSearch.setAdapter(adapter);
+
+        actvGenreSearch.setOnItemClickListener((parent, view, position, id) -> {
+            String selected = (String) parent.getItemAtPosition(position);
+            addGenreChip(selected);
+            actvGenreSearch.setText("");
+        });
+    }
+
+    // 🔹 שינוי: פונקציית עזר ליצירת צ'יפ עם כפתור מחיקה
+    private void addGenreChip(String text) {
+        for (int i = 0; i < cgSelectedGenres.getChildCount(); i++) {
+            if (((Chip) cgSelectedGenres.getChildAt(i)).getText().toString().equals(text)) return;
+        }
+
+        Chip chip = new Chip(requireContext());
+        chip.setText(text);
+        chip.setCloseIconVisible(true);
+        chip.setOnCloseIconClickListener(v -> cgSelectedGenres.removeView(chip));
+
+        chip.setChipBackgroundColorResource(R.color.beat_primary);
+        chip.setTextColor(Color.WHITE);
+        chip.setCloseIconTint(ColorStateList.valueOf(Color.WHITE));
+
+        cgSelectedGenres.addView(chip);
+    }
+
+    // 🔹 שינוי: פונקציה האוספת את כל הטקסטים מהצ'יפים שנבחרו
+    private String getSelectedGenres() {
+        List<String> selectedList = new ArrayList<>();
+        for (int i = 0; i < cgSelectedGenres.getChildCount(); i++) {
+            Chip chip = (Chip) cgSelectedGenres.getChildAt(i);
+            selectedList.add(chip.getText().toString());
+        }
+        return TextUtils.join(", ", selectedList);
     }
 
     // פונקציה המבצעת את העלאת התמונה ל-Firebase Storage.

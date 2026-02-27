@@ -60,6 +60,13 @@ public class ArtistLiveFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // 🔹 שינוי כאן: בדיקת בטיחות ראשונית למניעת קריסה בשל נתונים חסרים
+        if (showId == null || showId.isEmpty()) {
+            Toast.makeText(getContext(), "שגיאה: נתוני הופעה לא נטענו כראוי", Toast.LENGTH_LONG).show();
+            Navigation.findNavController(view).popBackStack();
+            return;
+        }
+
         recyclerView = view.findViewById(R.id.rvLiveRequests);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         dataSet = new ArrayList<>();
@@ -71,7 +78,8 @@ public class ArtistLiveFragment extends Fragment {
         // מאזין לחיצה הפותח BottomSheet להצגת רשימת המשתמשים שנתנו לייק.
         tvLikeCount.setOnClickListener(v -> {
             if (lastLikeCount > 0) {
-                LikersBottomSheet bottomSheet = new LikersBottomSheet(showId, "like");
+                // 🔹 שינוי כאן: שימוש ב-newInstance במקום בבנאי (Constructor) הישן
+                LikersBottomSheet bottomSheet = LikersBottomSheet.newInstance(showId, "like");
                 bottomSheet.show(getChildFragmentManager(), "LikersList");
             } else {
                 Toast.makeText(getContext(), "עדיין אין לייקים", Toast.LENGTH_SHORT).show();
@@ -81,7 +89,8 @@ public class ArtistLiveFragment extends Fragment {
         // מאזין לחיצה הפותח BottomSheet להצגת רשימת המשתמשים שנתנו דיסלייק.
         tvDislikeCount.setOnClickListener(v -> {
             if (lastDislikeCount > 0) {
-                LikersBottomSheet bottomSheet = new LikersBottomSheet(showId, "dislike");
+                // 🔹 שינוי כאן: שימוש ב-newInstance במקום בבנאי (Constructor) הישן
+                LikersBottomSheet bottomSheet = LikersBottomSheet.newInstance(showId, "dislike");
                 bottomSheet.show(getChildFragmentManager(), "DislikersList");
             } else {
                 Toast.makeText(getContext(), "אין דיסלייקים", Toast.LENGTH_SHORT).show();
@@ -101,19 +110,23 @@ public class ArtistLiveFragment extends Fragment {
             if (btnEnd != null) btnEnd.setVisibility(View.GONE);
         }
 
+        // 🔹 שינוי כאן: כל הלוגיקה של Firebase והכפתורים עטופה בבדיקה שה-showId קיים
         if (showId != null) {
             requestsRef = FirebaseDatabase.getInstance().getReference("Requests").child(showId);
             listenForRequests(); // התחלת האזנה לבקשות שירים.
 
             reactionsRef = FirebaseDatabase.getInstance().getReference("Reactions").child(showId);
             observeReactions(); // התחלת האזנה ללייקים ודיסלייקים.
-        }
 
-        // כפתור לסיום ההופעה: מעדכן את הסטטוס ב-Firebase ל-false וחוזר למסך הקודם ב-Backstack.
-        view.findViewById(R.id.btnEndShow).setOnClickListener(v -> {
-            FirebaseDatabase.getInstance().getReference("Shows").child(showId).child("live").setValue(false)
-                    .addOnCompleteListener(task -> Navigation.findNavController(requireView()).popBackStack());
-        });
+            // 🔹 שינוי כאן: העברתי את ה-Listener לתוך ה-IF כדי למנוע קריסה אם showId הוא null
+            View btnEndShow = view.findViewById(R.id.btnEndShow);
+            if (btnEndShow != null) {
+                btnEndShow.setOnClickListener(v -> {
+                    FirebaseDatabase.getInstance().getReference("Shows").child(showId).child("live").setValue(false)
+                            .addOnCompleteListener(task -> Navigation.findNavController(requireView()).popBackStack());
+                });
+            }
+        }
     }
 
     // פונקציה המממשת מודל Reactive UI. היא מאזינה לצומת ה-Reactions ב-Firebase ומעדכנת את הממשק בזמן אמת.
@@ -121,6 +134,9 @@ public class ArtistLiveFragment extends Fragment {
         reactionsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                // 🔹 שינוי: בדיקה שהפרגמנט עדיין "חי" למניעת קריסה בזמן עדכון אסינכרוני
+                if (!isAdded() || getContext() == null) return;
+
                 int currentLikes = 0;
                 int currentDislikes = 0;
 
@@ -142,10 +158,11 @@ public class ArtistLiveFragment extends Fragment {
                 // עדכון אינדיקציה ויזואלית של אייקון הלב (צבע וצורה) לפי קיום לייקים.
                 if (currentLikes > 0) {
                     imgLike.setImageResource(android.R.drawable.btn_star_big_on);
-                    imgLike.setColorFilter(ContextCompat.getColor(requireContext(), R.color.beat_primary));
+                    // 🔹 שינוי: שימוש ב-getContext() בטוח במקום requireContext()
+                    imgLike.setColorFilter(ContextCompat.getColor(getContext(), R.color.beat_primary));
                 } else {
                     imgLike.setImageResource(android.R.drawable.btn_star_big_off);
-                    imgLike.setColorFilter(ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
+                    imgLike.setColorFilter(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
                 }
 
                 lastLikeCount = currentLikes;

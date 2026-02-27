@@ -7,21 +7,19 @@ public class Artist {
     private String birthDate = "";
     private String instrument = "";
     private String email = "";
-    private String username = ""; // 🔹 שונה מ-userName ל-username לעקביות עם ה-DB
+    private String username = "";
     private String phone = "";
     private String socialLink = "";
     private String bio = "";
-    private String genre = "";
+    private String genres = ""; // 🔹 שונה ל-genres (מכיל מחרוזת מופרדת בפסיקים)
     private String userType = "artist";
     private String profileImageUrl = "";
 
-    // קונסטרקטור ריק חובה עבור Firebase
     public Artist() { }
 
-    // בנאי מלא עבור יצירת אמן חדש
     public Artist(String fullName, String stageName, String artistSubCategory, String birthDate,
                   String instrument, String email, String username, String phone,
-                  String socialLink, String bio, String genre, String profileImageUrl) {
+                  String socialLink, String bio, String genres, String profileImageUrl) {
 
         this.fullName = safe(fullName);
         this.stageName = safe(stageName);
@@ -33,7 +31,7 @@ public class Artist {
         this.phone = safe(phone);
         this.socialLink = safe(socialLink);
         this.bio = safe(bio);
-        this.genre = safe(genre);
+        this.genres = safe(genres); // 🔹 עודכן
         this.profileImageUrl = safe(profileImageUrl);
         this.userType = "artist";
     }
@@ -42,7 +40,6 @@ public class Artist {
         return s == null ? "" : s.trim();
     }
 
-    // Getters & Setters
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = safe(fullName); }
 
@@ -61,8 +58,8 @@ public class Artist {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = safe(email); }
 
-    public String getUsername() { return username; } // 🔹 עודכן
-    public void setUsername(String username) { this.username = safe(username); } // 🔹 עודכן
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = safe(username); }
 
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = safe(phone); }
@@ -73,8 +70,8 @@ public class Artist {
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = safe(bio); }
 
-    public String getGenre() { return genre; }
-    public void setGenre(String genre) { this.genre = safe(genre); }
+    public String getGenres() { return genres; } // 🔹 עודכן
+    public void setGenres(String genres) { this.genres = safe(genres); } // 🔹 עודכן
 
     public String getUserType() { return userType; }
     public void setUserType(String userType) { this.userType = safe(userType); }

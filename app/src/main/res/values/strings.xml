@@ -6,12 +6,24 @@
         <item>...בחרו סגנון אהוב</item>
         <item>(Pop) פופ</item>
         <item>(Rock) רוק</item>
-        <item>(Hip Hop) היפ הופ</item>
-        <item>מזרחית / ים תיכוני</item>
-        <item>טכנו / אלקטרוני</item>
-        <item>גאז ובלוז</item>
-        <item>אלטרנטיבי</item>
-        <item>רגאיי</item>
+        <item>(Hip Hop) היפ-הופ וראפ</item>
+        <item>(Reggaeton) רגאטון</item>
+        <item>(K-Pop) קיי-פופ</item>
+        <item>(Classic) קלאסית</item>
+        <item>(Blues) בלוז</item>
+        <item>(Jazz) ג'אז</item>
+        <item>(RnB and Soul) ריתם אנד בלוז ומוזיקת נשמה</item>
+        <item>(Metal) מטאל</item>
+        <item>(Alternative-Indie) אלטרנטיבית-אינדי</item>
+        <item>(Folk and Country) פולק וקאנטרי</item>
+        <item>(Reggae) רגאיי</item>
+        <item>(Middle Eastern) מזרחית / ים תיכוני</item>
+        <item>(Traditional music) מוזיקה יהודית</item>
+        <item>(Israeli) שירי ארץ ישראל</item>
+        <item>(Trance) טראנס</item>
+        <item>(House) האוס</item>
+        <item>(Techno) טכנו</item>
+        <item>(DownTempo) דאון טמפו</item>
     </string-array>
 
     <string name="artist_title">הרשמת אמן 🎧</string>

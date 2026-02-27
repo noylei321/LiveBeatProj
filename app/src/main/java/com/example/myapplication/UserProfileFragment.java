@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.graphics.Color; // 🔹 שינוי: ייבוא לצבע טקסט לבן
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,8 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.chip.Chip; // 🔹 שינוי: ייבוא Chip
+import com.google.android.material.chip.ChipGroup; // 🔹 שינוי: ייבוא ChipGroup
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -24,7 +27,8 @@ import com.google.firebase.database.ValueEventListener;
 public class UserProfileFragment extends Fragment {
 
     private ShapeableImageView imgUserProfile;
-    private TextView tvUserFullName, tvUserUsername, tvUserBio, tvUserGenres;
+    private TextView tvUserFullName, tvUserUsername, tvUserBio;
+    private ChipGroup cgUserGenres; // 🔹 שינוי: החלפת TextView ב-ChipGroup
     private TextView tvUserPhone, tvUserEmail, tvUserBirthDate;
 
     private String userId;
@@ -63,7 +67,10 @@ public class UserProfileFragment extends Fragment {
         tvUserFullName = view.findViewById(R.id.tvUserFullName);
         tvUserUsername = view.findViewById(R.id.tvUserUsername);
         tvUserBio = view.findViewById(R.id.tvUserBio);
-        tvUserGenres = view.findViewById(R.id.tvUserGenres);
+
+        // 🔹 שינוי: Binding לרכיב ה-ChipGroup החדש
+        cgUserGenres = view.findViewById(R.id.cgUserGenres);
+
         tvUserPhone = view.findViewById(R.id.tvUserPhone);
         tvUserEmail = view.findViewById(R.id.tvUserEmail);
         tvUserBirthDate = view.findViewById(R.id.tvUserBirthDate);
@@ -90,7 +97,7 @@ public class UserProfileFragment extends Fragment {
         if (userId != null) {
             loadUserData(userId);
         } else {
-            Toast.makeText(getContext(), "לא נמצא משתמש מחובר", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "לא נמצא משתמש מחובר", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -117,7 +124,9 @@ public class UserProfileFragment extends Fragment {
                         tvUserBio.setText(user.getBio());
                     }
 
-                    tvUserGenres.setText(user.getGenre());
+                    // 🔹 שינוי: הצגת הז'אנרים המועדפים כצ'יפים מעוצבים
+                    populateUserGenreChips(user.getGenre());
+
                     tvUserPhone.setText(user.getPhone());
                     tvUserEmail.setText(user.getEmail());
                     tvUserBirthDate.setText(user.getBirthDate());
@@ -139,8 +148,30 @@ public class UserProfileFragment extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "שגיאה בטעינת הנתונים", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "שגיאה בטעינת הנתונים", Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    // 🔹 שינוי: פונקציית עזר לפירוק המחרוזת מה-DB ויצירת צ'יפים לתצוגה בלבד
+    private void populateUserGenreChips(String genres) {
+        if (cgUserGenres == null) return;
+        cgUserGenres.removeAllViews();
+        if (genres == null || genres.isEmpty()) return;
+
+        String[] genresArray = genres.split(", ");
+        for (String g : genresArray) {
+            Chip chip = new Chip(requireContext());
+            chip.setText(g);
+            chip.setClickable(false);
+            chip.setCheckable(false);
+
+            // עיצוב הצ'יפ (שימוש בצבע הורוד של המותג)
+            chip.setChipBackgroundColorResource(R.color.beat_pink);
+            chip.setTextColor(Color.WHITE);
+            chip.setChipStrokeWidth(0f);
+
+            cgUserGenres.addView(chip);
+        }
     }
 }

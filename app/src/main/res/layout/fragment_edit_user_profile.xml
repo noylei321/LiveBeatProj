@@ -195,17 +195,37 @@
                     android:gravity="top"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <RelativeLayout
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilUserGenreSearch"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/spinner_bg"
-                android:layout_marginBottom="24dp">
-                <Spinner
-                    android:id="@+id/spinnerEditUserGenre"
+                android:layout_height="wrap_content"
+                android:hint="חפש והוסף סגנונות שאתה אוהב"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                app:boxBackgroundColor="@color/white"
+                app:startIconDrawable="@android:drawable/ic_menu_search"
+                android:layout_marginBottom="4dp">
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/actvUserGenreSearch"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:entries="@array/music_genres" />
-            </RelativeLayout>
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:inputType="text"
+                    android:completionThreshold="1"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:layout_marginBottom="24dp">
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/cgUserSelectedGenres"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="8dp"
+                    app:singleLine="true"
+                    app:singleSelection="false" />
+            </HorizontalScrollView>
 
             <Button
                 android:id="@+id/btnSaveUserChanges"

@@ -2,26 +2,35 @@ package com.example.myapplication;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList; // 🔹 שינוי: ייבוא עבור צבעי הצ'יפים
+import android.graphics.Color; // 🔹 שינוי: ייבוא לצבע טקסט לבן
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils; // 🔹 שינוי: ייבוא עבור איחוד מחרוזות
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter; // 🔹 שינוי: ייבוא עבור האדפטור של החיפוש
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.Toast;
 
+import com.google.android.material.chip.Chip; // 🔹 שינוי: ייבוא Chip
+import com.google.android.material.chip.ChipGroup; // 🔹 שינוי: ייבוא ChipGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView; // 🔹 שינוי: ייבוא רכיב החיפוש
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List; // 🔹 שינוי: ייבוא List
 
 public class RegisterUserFragment extends Fragment {
 
@@ -29,6 +38,10 @@ public class RegisterUserFragment extends Fragment {
     private Uri imageUri = null;
 
     private TextInputLayout tilFullName, tilUsername, tilPassword, tilConfirmPassword, tilEmail, tilPhone, tilBirthDate, tilBio;
+
+    // 🔹 שינוי: הוספת רכיבי החיפוש והבחירה החדשים
+    private ChipGroup cgUserSelectedGenres;
+    private MaterialAutoCompleteTextView actvUserGenreSearch;
 
     // הגדרת משגר (Launcher) לטיפול בתוצאה של פעילות חיצונית (בחירת תמונה מהגלריה).
     // הפונקציה מבקשת הרשאה קבועה (Persistable URI) כדי להבטיח שהגישה לקובץ לא תתבטל במעבר בין ה-Fragment ל-Activity.
@@ -82,7 +95,11 @@ public class RegisterUserFragment extends Fragment {
         tilBirthDate = view.findViewById(R.id.tilBirthDate);
         tilBio = view.findViewById(R.id.tilBio);
 
-        Spinner spinnerGenre = view.findViewById(R.id.spinnerGenre);
+        // 🔹 שינוי: אתחול רכיבי הז'אנרים החדשים
+        cgUserSelectedGenres = view.findViewById(R.id.cgUserSelectedGenres);
+        actvUserGenreSearch = view.findViewById(R.id.actvUserGenreSearch);
+        setupGenreSearch();
+
         Button btnRegister = view.findViewById(R.id.btnRegisterUser);
 
         // הגדרת מאזין לחיצה משותף להפעלת בחירת תמונה מהגלריה.
@@ -116,7 +133,8 @@ public class RegisterUserFragment extends Fragment {
             String birthDate = etBirthDate.getText().toString().trim();
             String bio = etBio.getText().toString().trim();
 
-            String genre = (spinnerGenre.getSelectedItem() != null) ? spinnerGenre.getSelectedItem().toString() : "";
+            // 🔹 שינוי: איסוף הז'אנרים הנבחרים מהצ'יפים
+            String genre = getSelectedGenres();
 
             boolean isValid = true;
 
@@ -127,9 +145,9 @@ public class RegisterUserFragment extends Fragment {
             if (phone.isEmpty()) { tilPhone.setError("חובה למלא טלפון"); isValid = false; }
             if (birthDate.isEmpty()) { tilBirthDate.setError("חובה לבחור תאריך"); isValid = false; }
 
-            // וולידציה לספינר: מוודא שהמשתמש בחר ערך חוקי ולא נשאר על כותרת ברירת המחדל.
-            if (spinnerGenre.getSelectedItemPosition() == 0 && spinnerGenre.getCount() > 1) {
-                Toast.makeText(getContext(), "חובה לבחור סגנון מוזיקה!", Toast.LENGTH_SHORT).show();
+            // 🔹 שינוי: וולידציה לבחירת ז'אנר (בדיקה אם המחרוזת ריקה)
+            if (genre.isEmpty()) {
+                Toast.makeText(getContext(), "חובה לבחור לפחות סגנון מוזיקה אחד!", Toast.LENGTH_SHORT).show();
                 isValid = false;
             }
 
@@ -161,6 +179,49 @@ public class RegisterUserFragment extends Fragment {
                 ((MainActivity) getActivity()).registerNewUser(email, password, userToSend, imageUri);
             }
         });
+    }
+
+    // 🔹 שינוי: פונקציה להגדרת מנגנון החיפוש (Autocomplete)
+    private void setupGenreSearch() {
+        String[] allGenres = getResources().getStringArray(R.array.music_genres);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, allGenres);
+        actvUserGenreSearch.setAdapter(adapter);
+
+        actvUserGenreSearch.setOnItemClickListener((parent, view, position, id) -> {
+            String selected = (String) parent.getItemAtPosition(position);
+            addGenreChip(selected);
+            actvUserGenreSearch.setText(""); // ניקוי השדה להזנה הבאה
+        });
+    }
+
+    // 🔹 שינוי: פונקציית עזר ליצירת צ'יפ עם כפתור מחיקה (X)
+    private void addGenreChip(String text) {
+        for (int i = 0; i < cgUserSelectedGenres.getChildCount(); i++) {
+            if (((Chip) cgUserSelectedGenres.getChildAt(i)).getText().toString().equals(text)) return;
+        }
+
+        Chip chip = new Chip(requireContext());
+        chip.setText(text);
+        chip.setCloseIconVisible(true);
+        chip.setOnCloseIconClickListener(v -> cgUserSelectedGenres.removeView(chip));
+
+        // עיצוב הצ'יפ שנבחר (שימוש ב-beat_pink כפי שמופיע בכפתור הרישום)
+        chip.setChipBackgroundColorResource(R.color.beat_pink);
+        chip.setTextColor(Color.WHITE);
+        chip.setCloseIconTint(ColorStateList.valueOf(Color.WHITE));
+
+        cgUserSelectedGenres.addView(chip);
+    }
+
+    // 🔹 שינוי: פונקציה האוספת את כל הטקסטים מהצ'יפים שנבחרו למחרוזת אחת
+    private String getSelectedGenres() {
+        List<String> selectedList = new ArrayList<>();
+        for (int i = 0; i < cgUserSelectedGenres.getChildCount(); i++) {
+            Chip chip = (Chip) cgUserSelectedGenres.getChildAt(i);
+            selectedList.add(chip.getText().toString());
+        }
+        return TextUtils.join(", ", selectedList);
     }
 
     // פונקציית עזר המנקה את כל הודעות השגיאה מה-TextInputLayouts במסך לקראת בדיקה חדשה.

@@ -1,11 +1,13 @@
 package com.example.myapplication;
 
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.database.FirebaseDatabase;
@@ -49,6 +51,16 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
         // עדכון תוכן הבקשה ושם השולח.
         holder.tvContent.setText(request.getContent());
         holder.tvSender.setText("מאת: " + request.getSenderName());
+
+        //   הוספת מאזין לחיצה למעבר לפרופיל הבליין
+        holder.tvSender.setOnClickListener(v -> {
+            if (request.getSenderId() != null) {
+                Bundle b = new Bundle();
+                b.putString("userId", request.getSenderId());
+                b.putBoolean("fromArtistLive", true);
+                Navigation.findNavController(v).navigate(R.id.userProfileFragment, b);
+            }
+        });
 
         // פורמט של הזמן: הפיכת ה-Timestamp (מילישניות) למחרוזת קריאה בפורמט HH:mm.
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());

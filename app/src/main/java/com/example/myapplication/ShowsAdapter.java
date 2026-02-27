@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log; // 🔹 שינוי כאן: הוספת Log
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,9 +32,12 @@ import java.util.Locale;
 public class ShowsAdapter extends RecyclerView.Adapter<ShowsAdapter.ShowViewHolder> {
 
     private ArrayList<Show> showsList;
+    private boolean isEditable; // 🔹 משתנה לקביעת מצב צפייה בלבד
 
-    public ShowsAdapter(ArrayList<Show> showsList) {
+    // הבנאי מקבל כעת פרמטר המציין אם המשתמש מורשה לערוך (למחוק) או ללחוץ על הפריט
+    public ShowsAdapter(ArrayList<Show> showsList, boolean isEditable) {
         this.showsList = showsList;
+        this.isEditable = isEditable;
     }
 
     // יצירת ה-ViewHolder על ידי ניפוח ה-XML של פריט הרשימה (item_show).
@@ -60,55 +64,82 @@ public class ShowsAdapter extends RecyclerView.Adapter<ShowsAdapter.ShowViewHold
 
         // שימוש ב-ValueEventListener בתוך האדפטור:
         // מאפשר לכל כרטיסייה (Card) לעדכן את מונה הלייקים והדיסלייקים שלה בצורה עצמאית בזמן אמת.
-        DatabaseReference reactionsRef = FirebaseDatabase.getInstance().getReference("Reactions").child(showId);
-        reactionsRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                int likes = 0, dislikes = 0;
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    String val = ds.getValue(String.class);
-                    if ("like".equals(val)) likes++;
-                    else if ("dislike".equals(val)) dislikes++;
+        if (showId != null) { // 🔹 שינוי כאן: הגנה מפני ID ריק
+            DatabaseReference reactionsRef = FirebaseDatabase.getInstance().getReference("Reactions").child(showId);
+            reactionsRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    int likes = 0, dislikes = 0;
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        String val = ds.getValue(String.class);
+                        if ("like".equals(val)) likes++;
+                        else if ("dislike".equals(val)) dislikes++;
+                    }
+                    holder.tvLikes.setText(String.valueOf(likes));
+                    holder.tvDislikes.setText(String.valueOf(dislikes));
                 }
-                holder.tvLikes.setText(String.valueOf(likes));
-                holder.tvDislikes.setText(String.valueOf(dislikes));
-            }
-            @Override public void onCancelled(@NonNull DatabaseError error) {}
-        });
+                @Override public void onCancelled(@NonNull DatabaseError error) {}
+            });
+        }
 
-        // ניהול ניווט: לחיצה על המופע מעבירה את האמן למסך ה-Live או הסיכום.
-        // אנו מחשבים האם המופע נחשב כהיסטורי (עברו מעל 4 שעות מתחילתו) לצורך הצגת הנתונים הנכונה.
-        holder.itemView.setOnClickListener(v -> {
-            Bundle b = new Bundle();
-            b.putString("showId", showId);
+        // 🔹 שינוי: ניהול ניווט מתבצע רק אם אנחנו במצב עריכה (Dashboard)
+        // המאזין יוגדר רק אם isEditable הוא true. אחרת, הפריט לא יהיה לחיץ.
+        if (isEditable) {
+            holder.itemView.setOnClickListener(v -> {
+                // 🔹 שינוי כאן: בדיקת תקינות לפני ניווט למניעת קריסה
+                if (showId == null || showId.isEmpty()) {
+                    Toast.makeText(v.getContext(), "שגיאה: לא נמצא מזהה להופעה זו", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            boolean isPast = false;
-            try {
-                long currentTime = System.currentTimeMillis();
-                long startTime = convertTimeToMillis(show.getDate(), show.getTime());
-                // אם עברו 4 שעות (14,400,000 מילישניות), המופע נסגר אוטומטית.
-                if (currentTime > (startTime + 14400000)) isPast = true;
-            } catch (Exception e) { e.printStackTrace(); }
+                Bundle b = new Bundle();
+                b.putString("showId", showId);
 
-            b.putBoolean("isHistorical", isPast);
-            Navigation.findNavController(v).navigate(R.id.artistLiveFragment, b);
-        });
+                boolean isPast = false;
+                try {
+                    long currentTime = System.currentTimeMillis();
+                    long startTime = convertTimeToMillis(show.getDate(), show.getTime());
+                    // הוספת בדיקה ש-startTime חוקי
+                    if (startTime > 0 && currentTime > (startTime + 14400000)) {
+                        isPast = true;
+                    }
+                } catch (Exception e) { e.printStackTrace(); }
 
-        // ניהול מחיקה: הפעלת AlertDialog לאישור המשתמש לפני הסרת הנתונים מ-Firebase.
-        // המחיקה היא "מפליית" (Cascading) - מוחקת גם את המופע וגם את הבקשות המשויכות אליו.
-        holder.btnDeleteShow.setOnClickListener(v -> {
-            new androidx.appcompat.app.AlertDialog.Builder(v.getContext())
-                    .setTitle("ביטול הופעה")
-                    .setMessage("האם למחוק את " + show.getLocation() + "?")
-                    .setPositiveButton("כן", (dialog, which) -> {
-                        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
-                        db.child("Shows").child(show.getShowId()).removeValue();
-                        db.child("Requests").child(show.getShowId()).removeValue();
-                        Toast.makeText(v.getContext(), "ההופעה בוטלה", Toast.LENGTH_SHORT).show();
-                    })
-                    .setNegativeButton("לא", null)
-                    .show();
-        });
+                b.putBoolean("isHistorical", isPast);
+
+                // 🔹 שינוי כאן: הוספת Log לבדיקה ב-Logcat במידה ויש בעיה בגרף הניווט
+                Log.d("ShowsAdapter", "Navigating to Live with ID: " + showId);
+                // שינוי כאן: שימוש ב-Action ID במקום ב-Destination ID
+                Navigation.findNavController(v).navigate(R.id.action_artistDashboardFragment_to_artistLiveFragment, b);
+            });
+            holder.itemView.setClickable(true);
+        } else {
+            // 🔹 ביטול אפשרות הלחיצה כשאנחנו בפרופיל האמן
+            holder.itemView.setOnClickListener(null);
+            holder.itemView.setClickable(false);
+        }
+
+        // הסתרת כפתור המחיקה במידה ומדובר בתצוגת היסטוריה בפרופיל
+        if (!isEditable) {
+            holder.btnDeleteShow.setVisibility(View.GONE);
+        } else {
+            holder.btnDeleteShow.setVisibility(View.VISIBLE);
+            // ניהול מחיקה: הפעלת AlertDialog לאישור המשתמש לפני הסרת הנתונים מ-Firebase.
+            holder.btnDeleteShow.setOnClickListener(v -> {
+                if (showId == null) return; // הגנה נוספת
+                new androidx.appcompat.app.AlertDialog.Builder(v.getContext())
+                        .setTitle("ביטול הופעה")
+                        .setMessage("האם למחוק את " + show.getLocation() + "?")
+                        .setPositiveButton("כן", (dialog, which) -> {
+                            DatabaseReference db = FirebaseDatabase.getInstance().getReference();
+                            db.child("Shows").child(show.getShowId()).removeValue();
+                            db.child("Requests").child(show.getShowId()).removeValue();
+                            Toast.makeText(v.getContext(), "ההופעה בוטלה", Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton("לא", null)
+                        .show();
+            });
+        }
 
         setArtistIcon(holder, show.getArtistType());
     }
@@ -126,7 +157,6 @@ public class ShowsAdapter extends RecyclerView.Adapter<ShowsAdapter.ShowViewHold
             } else if (currentTime > (startTime + 14400000)) {
                 holder.tvStatus.setText("הופעת עבר");
                 holder.tvStatus.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
-                // שינוי שקיפות להבחנה ויזואלית קלה בין הופעות פעילות להיסטוריות.
                 holder.itemView.setAlpha(0.6f);
             } else {
                 holder.tvStatus.setText("קרוב");
@@ -136,14 +166,12 @@ public class ShowsAdapter extends RecyclerView.Adapter<ShowsAdapter.ShowViewHold
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    // התאמת האייקון בצורה דינמית לפי סוג האמן שנשמר ב-Database.
     private void setArtistIcon(ShowViewHolder holder, String type) {
         if ("DJ".equals(type)) holder.imgShowTypeIcon.setImageResource(R.drawable.ic_dj);
         else if ("Comedian".equals(type) || "קומיקאי".equals(type)) holder.imgShowTypeIcon.setImageResource(R.drawable.ic_standup);
         else holder.imgShowTypeIcon.setImageResource(R.drawable.ic_singer);
     }
 
-    // פונקציית עזר להמרת מחרוזות תאריך וזמן לערך מספרי במילישניות לצורך השוואה וחישובים.
     private long convertTimeToMillis(String date, String time) throws Exception {
         SimpleDateFormat sdf = new SimpleDateFormat("d/M/yyyy HH:mm", Locale.getDefault());
         Date mDate = sdf.parse(date + " " + time);
@@ -153,7 +181,6 @@ public class ShowsAdapter extends RecyclerView.Adapter<ShowsAdapter.ShowViewHold
     @Override
     public int getItemCount() { return showsList != null ? showsList.size() : 0; }
 
-    // ViewHolder המחזיק את הרפרנסים לרכיבי ה-UI של הכרטיסייה.
     public static class ShowViewHolder extends RecyclerView.ViewHolder {
         TextView tvLocation, tvDate, tvTime, tvGenre, tvStatus;
         TextView tvLikes, tvDislikes;

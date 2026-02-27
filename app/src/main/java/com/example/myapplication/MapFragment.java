@@ -190,9 +190,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                                     if (mDate != null) startTime = mDate.getTime();
                                 } catch (Exception e) { e.printStackTrace(); }
 
-                                // סיווג המרקר לפי הזמן: ירוק ל-LIVE, כחול ל"בקרוב", ואפור להמשך הערב.
-                                if (show.isLive()) addMarkerForShow(show, "LIVE");
-                                else if (startTime > currentTime) {
+                                // 🔹 תיקון: הוספת תנאי שבודק אם הזמן הנוכחי הוא בתוך חלון ההופעה
+                                // (החל משעת ההתחלה ועד 4 שעות לאחר מכן)
+                                if (show.isLive() || (currentTime >= startTime && currentTime <= (startTime + 10800000))) {
+                                    addMarkerForShow(show, "LIVE");
+                                } else if (startTime > currentTime) {
                                     if (startTime - currentTime <= 3600000) addMarkerForShow(show, "SOON");
                                     else addMarkerForShow(show, "LATER_TODAY");
                                 }
@@ -213,7 +215,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         String snippet;
 
         switch (status) {
-            case "LIVE": color = BitmapDescriptorFactory.HUE_GREEN; snippet = "LIVE! לחץ להצטרפות"; break;
+            // 🔹 תיקון: שינוי הצבע לאדום עבור הופעות חיות כפי שביקשת
+            case "LIVE": color = BitmapDescriptorFactory.HUE_RED; snippet = "LIVE! לחץ להצטרפות"; break;
             case "SOON": color = BitmapDescriptorFactory.HUE_AZURE; snippet = "מתחילים בקרוב: " + show.getTime(); break;
             default: color = 210f; alpha = 0.6f; snippet = "הופעה הערב ב-" + show.getTime(); break;
         }

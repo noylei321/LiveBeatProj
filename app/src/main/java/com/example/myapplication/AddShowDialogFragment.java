@@ -38,8 +38,8 @@ import retrofit2.Response;
 
 public class AddShowDialogFragment extends DialogFragment {
 
-    private static final String GOOGLE_MAPS_API_KEY = "YOUR_API_KEY"; // מפתח ה-API של גוגל
-
+    // 🔹 שינוי 1: וודא שהחלפת את המפתח למטה במפתח ה-API האמיתי מהקונסול (התחיל ב-AIza)
+    private static final String GOOGLE_MAPS_API_KEY = "AIzaSyDlFPlELZDI1OC8Kx_oROaEyJHRFEC9VXU";
     // Handler המשמש לניהול משימות ב-UI Thread, כאן הוא מנהל את ה-Debounce למניעת הצפת בקשות API.
     private final Handler debounceHandler = new Handler(Looper.getMainLooper());
     private Runnable debounceRunnable;
@@ -139,14 +139,17 @@ public class AddShowDialogFragment extends DialogFragment {
                 if (!isAdded()) return; // בדיקה שהפרגמנט עדיין קיים כדי למנוע קריסה.
 
                 if (!response.isSuccessful() || response.body() == null) {
-                    Toast.makeText(getContext(), "HTTP Error: " + response.code(), Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 PlacesAutoResponse body = response.body();
 
-                // בדיקה אם הסטטוס של גוגל תקין (למשל, שה-API Key לא חסום).
+                // 🔹 שינוי 2: הוספת לוג שמדפיס את הודעת השגיאה המפורשת של גוגל (יעזור לפתור את ה-REQUEST_DENIED)
                 if (body.getStatus() == null || !body.getStatus().equals("OK")) {
+                    Log.e("PlacesError", "Status: " + body.getStatus());
+                    if (body.getErrorMessage() != null) {
+                        Log.e("PlacesError", "Reason: " + body.getErrorMessage());
+                    }
                     return;
                 }
 
@@ -163,7 +166,7 @@ public class AddShowDialogFragment extends DialogFragment {
             @Override
             public void onFailure(Call<PlacesAutoResponse> call, Throwable t) {
                 if (!isAdded()) return;
-                Toast.makeText(getContext(), "Autocomplete failed: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.e("PlacesAPI", "Autocomplete failed: " + t.getMessage());
             }
         });
     }
@@ -235,7 +238,7 @@ public class AddShowDialogFragment extends DialogFragment {
                             // יצירת מפתח ייחודי (Push Key) למופע החדש.
                             DatabaseReference showsRef = FirebaseDatabase.getInstance().getReference("Shows").push();
 
-                            // יצירת המופע (10 פרמטרים כפי שהגדרנו בבנאי).
+                            // 🔹 שינוי 3: יצירת המופע עם 10 הפרמטרים המעודכנים (כולל uid, stageName ו-artistType)
                             Show newShow = new Show(showsRef.getKey(), uid, stageName, artistType, location, time, genre, date, lat, lng);
                             newShow.setLive(false);
 

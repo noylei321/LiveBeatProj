@@ -75,9 +75,14 @@ public class ArtistDashboardFragment extends Fragment {
 
         loadArtistDataFromDB(); // טעינת נתוני פרופיל.
 
+        // 🔹 שינוי: קריאה לפונקציית תיקון נתונים חסרים ב-Firebase
+        repairMissingShowIds();
+
         rvShows = view.findViewById(R.id.rvPastShows);
         showsList = new ArrayList<>();
-        showsAdapter = new ShowsAdapter(showsList);
+
+        // 🔹 התיקון בוצע כאן: הוספת הפרמטר true כדי להתאים לבנאי החדש ולאפשר עריכה בדאשבורד
+        showsAdapter = new ShowsAdapter(showsList, true);
 
         if (rvShows != null) {
             rvShows.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -181,7 +186,8 @@ public class ArtistDashboardFragment extends Fragment {
         Bundle b = new Bundle();
         b.putString("showId", showId);
         b.putBoolean("isHistorical", false);
-        Navigation.findNavController(requireView()).navigate(R.id.artistLiveFragment, b);
+        // 🔹 שינוי: שימוש ב-Action ID המלא כדי למנוע קריסות ב-Navigation Component
+        Navigation.findNavController(requireView()).navigate(R.id.action_artistDashboardFragment_to_artistLiveFragment, b);
     }
 
     // פונקציה המושכת את נתוני הפרופיל של האמן מה-DB ומעדכנת את רכיבי ה-UI (שם, תמונה וסוג אמן).
@@ -335,5 +341,26 @@ public class ArtistDashboardFragment extends Fragment {
                 })
                 .setNegativeButton("לא", (dialog, which) -> dialog.dismiss())
                 .show();
+    }
+
+    // 🔹 שינוי: פונקציה לתיקון נתונים ישנים ב-Firebase (השלמת שדות showId חסרים)
+    private void repairMissingShowIds() {
+        if (mAuth.getCurrentUser() == null) return;
+        String currentUid = mAuth.getCurrentUser().getUid();
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Shows");
+
+        ref.orderByChild("artistId").equalTo(currentUid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    if (!ds.hasChild("showId")) {
+                        String actualKey = ds.getKey();
+                        ds.getRef().child("showId").setValue(actualKey);
+                        Log.d("DataRepair", "Fixed missing showId for: " + actualKey);
+                    }
+                }
+            }
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
+        });
     }
 }
